@@ -1,20 +1,15 @@
+import { PageShell, PageTitle } from "@/components/site/page-shell";
 import { SignInForm } from "./sign-in-form";
 
-export const metadata = { title: "Sign in · Blake Johnson" };
+export const metadata = { title: "Sign in", robots: { index: false } };
 
-// Layout and styling to follow docs/design-spec.md once it is filled in.
-export default async function SignInPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ next?: string }>;
-}) {
+export default async function SignInPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
   const { next } = await searchParams;
   const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
   return (
-    <main>
-      <h1>Sign in</h1>
-      <p>Enter your email and we&apos;ll send you a link to sign in. No password needed.</p>
+    <PageShell width="reading">
+      <PageTitle title="Sign in" subtitle="Enter your email and we'll send you a link. No password needed." />
       <SignInForm next={safeNext} />
-    </main>
+    </PageShell>
   );
 }

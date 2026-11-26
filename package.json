@@ -11,7 +11,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx src/db/seed.ts",
     "db:studio": "drizzle-kit studio",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:seed:demo": "tsx src/db/seed-demo.ts"
   },
   "dependencies": {
     "better-auth": "^1.7.28",
@@ -21,6 +22,8 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "resend": "^6.40.0",
+    "server-only": "^0.0.1",
+    "sharp": "^0.35.5",
     "zod": "^4.6.7"
   },
   "devDependencies": {
