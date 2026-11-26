@@ -2,7 +2,7 @@ import { getListOptions, getNewsletterCopy } from "@/lib/newsletter-copy";
 import { SubscribeForm } from "./subscribe-form";
 
 /**
- * Newsletter box: a quiet, compact signup between thin rules. Wording and
+ * Newsletter box: a quiet, compact signup on a warm panel (Nov 26 amendment). Wording and
  * choices are edited in Studio → Settings (Nov 25 amendment).
  */
 export async function NewsletterBox() {
@@ -13,7 +13,7 @@ export async function NewsletterBox() {
     <section
       id="subscribe"
       aria-labelledby="newsletter-heading"
-      className="mx-auto flex w-full max-w-lead scroll-mt-6 flex-col gap-3 border-t border-b border-rule py-7"
+      className="mx-auto box-border flex w-full max-w-lead scroll-mt-6 flex-col gap-3 bg-warm px-6 py-8 sm:px-9 sm:py-9"
     >
       <div className="kicker">{copy.label}</div>
       <h2 id="newsletter-heading" className="m-0 font-display text-[24px] leading-[1.2] font-normal sm:text-[26px]">

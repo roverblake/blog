@@ -161,3 +161,6 @@ A subscribers-only post can be set to "Title and subtitle only" in the post's Se
 
 ### Amendment: editable footer (Nov 26, 2026)
 The footer's link columns (up to four, each with a heading and up to ten links) and the credit line are edited in Studio → Settings → Footer. Defaults are the §4 columns and the ESV credit. Styling is unchanged. The site has no sharing features.
+
+### Amendment: signup box on a warm panel (Nov 26, 2026)
+The compact signup box (home page and end of posts) now sits on the warm panel colour used by the subscriber box (`bg-warm`), with no top or bottom rules, so it reads as its own block instead of another line in the list above. Type and spacing are unchanged.
