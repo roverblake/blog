@@ -92,3 +92,12 @@ highlights, outlines, ideas/board state, calendar entries, sermons and series.
 
 - Image search inside the editor: find and insert Unsplash or public-domain
   images (e.g. Wikimedia Commons), with the credit filled in automatically.
+- Note kinds (fits Stage 2): today's public Notes are posts of type "note"
+  (stored as `commonplace`). Later add a nullable `note_kind` column
+  (fleeting, literature, permanent) and a `source_id` linking to a Sources
+  table (book or article: title, author, year, ISBN/URL). Fleeting and
+  literature notes stay private by default; any note can be published to
+  the Notes page as it is today. A book review draft can be started from a
+  source, gathering its literature notes into the editor (copied in, like
+  "From my site"; no AI writing). No migration of existing notes needed:
+  they become permanent notes with no source.

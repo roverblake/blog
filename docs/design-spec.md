@@ -197,3 +197,6 @@ In the editor: click the space between two blocks that aren't text (a quote and 
 
 ### Amendment: notes stay off the home page (Nov 26, 2026)
 Replaces "one home feed". Below the lead post, "Latest" lists the five newest posts only, with an "All posts" link. Notes are reached from the menu.
+
+### Amendment: clipped notes in lists (Nov 26, 2026)
+On the Notes page, a note longer than about 80 words (pictures count as 60, link previews as 25) is cut at the next paragraph with "…", followed by "Read the whole note →" in navy italic. The cut is made on the server. A note's own page always shows it in full.

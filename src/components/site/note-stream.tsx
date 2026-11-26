@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArticleBody } from "@/components/article-body";
 import type { Doc } from "@/lib/content/types";
+import { clipDoc } from "@/lib/content/text";
 import { noteDate } from "@/lib/dates";
 import { postPath } from "@/lib/urls";
 
@@ -18,7 +19,9 @@ export function NoteStream({ notes, labelled = false }: { notes: NoteItem[]; lab
   if (!notes.length) return <p className="py-6 text-[18px] text-slate italic">No notes yet.</p>;
   return (
     <div>
-      {notes.map(({ post, doc, truncated }) => (
+      {notes.map(({ post, doc: full, truncated }) => {
+        const { doc, clipped } = truncated ? { doc: full, clipped: false } : clipDoc(full, 80);
+        return (
         <article key={post.id} className="border-b border-rule py-8 last:border-b-0">
           <Link href={postPath(post)} className="text-[13px] uppercase tracking-[0.18em] text-label hover:text-navy">
             {labelled ? "Note · " : ""}{post.publishedAt ? noteDate(post.publishedAt) : labelled ? "" : "Note"}
@@ -33,8 +36,14 @@ export function NoteStream({ notes, labelled = false }: { notes: NoteItem[]; lab
               For subscribers · Continue reading →
             </Link>
           )}
+          {clipped && (
+            <Link href={postPath(post)} className="continue-link mt-3 inline-block text-[17px] italic">
+              Read the whole note →
+            </Link>
+          )}
         </article>
-      ))}
+        );
+      })}
     </div>
   );
 }
