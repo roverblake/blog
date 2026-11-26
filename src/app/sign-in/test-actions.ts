@@ -17,9 +17,17 @@ export async function testSignIn(_prev: { error?: string; url?: string } | null,
   const wanted = Buffer.from(process.env.TEST_ADMIN_PASSWORD!);
   if (given.length !== wanted.length || !timingSafeEqual(given, wanted)) return { error: "That password isn't right." };
 
+  if (!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(adminEmail())) {
+    return { error: "ADMIN_EMAIL in Railway isn't a real email address. Fix it in Variables, then Deploy." };
+  }
   const capture: { url?: string } = {};
   const h = await headers();
-  await linkCapture.run(capture, () => auth.api.signInMagicLink({ body: { email: adminEmail(), callbackURL: "/studio" }, headers: h }));
+  try {
+    await linkCapture.run(capture, () => auth.api.signInMagicLink({ body: { email: adminEmail(), callbackURL: "/studio" }, headers: h }));
+  } catch (e) {
+    console.error("Test sign-in failed:", e);
+    return { error: "Couldn't sign in. Check that ADMIN_EMAIL is a real email address." };
+  }
   if (!capture.url) return { error: "Couldn't sign in. Check ADMIN_EMAIL is set." };
   return { url: capture.url };
 }
