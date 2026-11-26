@@ -77,10 +77,10 @@ const CUT_QUOTE_WORDS = 30;
 export async function withShortQuotes<T extends PostListItem>(items: T[]): Promise<(T & { quote?: string; cite?: string | null })[]> {
   const ids = items.filter((p) => p.type === "commonplace").map((p) => p.id);
   if (!ids.length) return items;
-  const rows = await db.select({ id: posts.id, content: posts.content, visibility: posts.visibility }).from(posts).where(inArray(posts.id, ids));
+  const rows = await db.select({ id: posts.id, content: posts.content, visibility: posts.visibility, fullyLocked: posts.fullyLocked }).from(posts).where(inArray(posts.id, ids));
   const found = new Map<string, { quote: string; cite: string | null }>();
   for (const r of rows) {
-    const { doc } = gateDoc(asDoc(r.content), { gated: r.visibility === "subscribers", hasAccess: false });
+    const { doc } = gateDoc(asDoc(r.content), { gated: r.visibility === "subscribers", hasAccess: false, locked: r.fullyLocked });
     const q = firstQuote(doc);
     if (!q?.text) continue;
     // A long quotation is cut at a word boundary and ends with an ellipsis, as in print.
@@ -155,15 +155,15 @@ export async function getLeadPost() {
 /** Quotes for "From the Commonplace Book": the first quote in recent notes. */
 export async function getCommonplaceQuotes(limit = 2) {
   const rows = await db
-    .select({ id: posts.id, type: posts.type, slug: posts.slug, title: posts.title, summary: posts.summary, visibility: posts.visibility, content: posts.content })
+    .select({ id: posts.id, type: posts.type, slug: posts.slug, title: posts.title, summary: posts.summary, visibility: posts.visibility, fullyLocked: posts.fullyLocked, content: posts.content })
     .from(posts)
     .where(and(isLive(), eq(posts.type, "commonplace")))
     .orderBy(desc(posts.publishedAt))
     .limit(limit * 3);
   return rows
-    .map(({ content, visibility, ...r }) => {
+    .map(({ content, visibility, fullyLocked, ...r }) => {
       // Only look at the free part of the note, never past a paywall line.
-      const { doc } = gateDoc(asDoc(content), { gated: visibility === "subscribers", hasAccess: false });
+      const { doc } = gateDoc(asDoc(content), { gated: visibility === "subscribers", hasAccess: false, locked: fullyLocked });
       const q = firstQuote(doc);
       const text = q?.text || r.summary || firstParagraphText(doc);
       return text ? { ...r, quote: text, cite: q?.cite ?? null } : null;
@@ -201,7 +201,7 @@ export { readingMinutes };
 export function viewablePost(post: typeof posts.$inferSelect, hasAccess: boolean) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { content, contentText, ...meta } = post;
-  const { doc, truncated } = gateDoc(asDoc(content), { gated: post.visibility === "subscribers", hasAccess });
+  const { doc, truncated } = gateDoc(asDoc(content), { gated: post.visibility === "subscribers", hasAccess, locked: post.fullyLocked });
   return { post: meta, doc, truncated };
 }
 
@@ -212,6 +212,7 @@ export function openingOf(post: typeof posts.$inferSelect) {
   const opening = (asDoc(content).content ?? []).find((b) => b.type === "paragraph" && (b.content?.length ?? 0) > 0);
   const paywallIdx = (asDoc(content).content ?? []).findIndex((b) => b.type === "paywall");
   const openingIdx = opening ? (asDoc(content).content ?? []).indexOf(opening) : -1;
-  const safe = opening && (paywallIdx < 0 || openingIdx < paywallIdx || post.visibility === "everyone") ? opening : null;
+  const locked = post.visibility === "subscribers" && post.fullyLocked;
+  const safe = opening && !locked && (paywallIdx < 0 || openingIdx < paywallIdx || post.visibility === "everyone") ? opening : null;
   return { post: meta, opening: safe && safe.type === "paragraph" ? safe : null };
 }

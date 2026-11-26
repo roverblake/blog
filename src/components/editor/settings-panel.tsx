@@ -101,7 +101,17 @@ export function SettingsPanel({ id, title, status, initial, onTypeChange }: { id
           ))}
         </div>
         {s.visibility === "subscribers" && (
-          <p className="mt-1.5 text-[13px] text-slate">Readers who aren&apos;t subscribed see the text above the paywall line.</p>
+          <div className="mt-2 flex flex-col gap-1.5 text-[14px]">
+            <span className="text-slate">What non-subscribers see:</span>
+            <label className="flex items-start gap-2">
+              <input type="radio" name="ps-locked" className="mt-1" checked={!s.fullyLocked} onChange={() => set("fullyLocked", false)} />
+              <span>The opening (everything above the paywall line, or the first few paragraphs)</span>
+            </label>
+            <label className="flex items-start gap-2">
+              <input type="radio" name="ps-locked" className="mt-1" checked={s.fullyLocked} onChange={() => set("fullyLocked", true)} />
+              <span>Title and subtitle only</span>
+            </label>
+          </div>
         )}
       </fieldset>
 

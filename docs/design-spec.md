@@ -149,3 +149,6 @@ On the home page, a commonplace post whose quotation is 45 words or fewer shows 
 - Post rows (home, section pages, tags, archive): the italic subtitle (17px slate) sits under the title, and a post with a header image shows a square thumbnail at the right of its row (88px; 64px on phones). Rows without an image stay text only.
 - Archive: a search box (the newsletter box's inline form and navy button) above the type and tag filters. It searches titles, subtitles and summaries, and the text of free posts only; subscriber-only text is never searched.
 - End of every post: a "Share" row styled like "Filed under" (Copy link, Email; no outside scripts), then the compact signup box, which is hidden when the subscriber gate is already showing.
+
+### Amendment: fully locked subscriber posts (Nov 26, 2026)
+A subscribers-only post can be set to "Title and subtitle only" in the post's Settings. Visitors who aren't subscribed see the kicker, title, subtitle, byline and header image, then the existing subscriber box; none of the text is sent to the browser. On the home page such a post shows no opening paragraph, only "Continue reading".

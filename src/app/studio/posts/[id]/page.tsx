@@ -35,6 +35,7 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
         settings: {
           type,
           visibility: post.visibility,
+          fullyLocked: post.fullyLocked,
           slug: post.slug,
           kicker: post.kicker ?? "",
           summary: post.summary ?? "",

@@ -45,6 +45,7 @@ export async function saveDraft(id: string, input: z.infer<typeof SaveInput>) {
 const SettingsInput = z.object({
   type: z.enum(["essay", "commonplace", "parish_letter"]),
   visibility: z.enum(["everyone", "subscribers"]),
+  fullyLocked: z.boolean(),
   slug: z.string().max(120),
   kicker: z.string().max(120),
   summary: z.string().max(1000),
@@ -65,6 +66,7 @@ export async function saveSettings(id: string, input: PostSettings) {
     .set({
       type: s.type,
       visibility: s.visibility,
+      fullyLocked: s.fullyLocked,
       slug,
       kicker: s.kicker || null,
       summary: s.summary || null,

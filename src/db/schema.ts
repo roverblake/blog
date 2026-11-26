@@ -141,6 +141,8 @@ export const posts = pgTable(
     type: postType("type").notNull().default("essay"),
     status: postStatus("status").notNull().default("draft"),
     visibility: postVisibility("visibility").notNull().default("everyone"),
+    /** Subscribers-only posts: when true, visitors see only the title and subtitle (no opening). */
+    fullyLocked: boolean("fully_locked").notNull().default(false),
     title: text("title").notNull().default(""),
     subtitle: text("subtitle"),
     kicker: text("kicker"),

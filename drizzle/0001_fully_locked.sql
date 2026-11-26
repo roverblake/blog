@@ -1,0 +1,1 @@
+ALTER TABLE "posts" ADD COLUMN "fully_locked" boolean DEFAULT false NOT NULL;
