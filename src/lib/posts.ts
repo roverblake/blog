@@ -55,10 +55,13 @@ export async function listPosts(opts: {
 
 /** Longest quotation (in words) shown in full in a list row. */
 const SHORT_QUOTE_WORDS = 45;
+/** Words kept when a longer quotation is shortened in a list row. */
+const CUT_QUOTE_WORDS = 30;
 
 /**
  * For commonplace posts in a list, attach the quotation and its source when the
- * quotation is short enough to show in full. Only the free part is read.
+ * quotation is short enough to show in full (longer ones are shortened with an ellipsis).
+ * Only the free part is read.
  */
 export async function withShortQuotes<T extends PostListItem>(items: T[]): Promise<(T & { quote?: string; cite?: string | null })[]> {
   const ids = items.filter((p) => p.type === "commonplace").map((p) => p.id);
@@ -68,7 +71,13 @@ export async function withShortQuotes<T extends PostListItem>(items: T[]): Promi
   for (const r of rows) {
     const { doc } = gateDoc(asDoc(r.content), { gated: r.visibility === "subscribers", hasAccess: false });
     const q = firstQuote(doc);
-    if (q?.text && countWords(q.text) <= SHORT_QUOTE_WORDS) found.set(r.id, { quote: q.text, cite: q.cite });
+    if (!q?.text) continue;
+    // A long quotation is cut at a word boundary and ends with an ellipsis, as in print.
+    const quote =
+      countWords(q.text) <= SHORT_QUOTE_WORDS
+        ? q.text
+        : `${q.text.replace(/\s+/g, " ").split(" ").slice(0, CUT_QUOTE_WORDS).join(" ").replace(/[\s,;:.!?—–-]+$/, "")}…`;
+    found.set(r.id, { quote, cite: q.cite });
   }
   return items.map((p) => ({ ...p, ...found.get(p.id) }));
 }
