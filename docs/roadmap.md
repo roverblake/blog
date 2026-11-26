@@ -87,3 +87,8 @@ highlights, outlines, ideas/board state, calendar entries, sermons and series.
 - ESV API scripture insertion.
 - Slides and handout export.
 - Preaching mode.
+
+## Parking lot
+
+- Image search inside the editor: find and insert Unsplash or public-domain
+  images (e.g. Wikimedia Commons), with the credit filled in automatically.
