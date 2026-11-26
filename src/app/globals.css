@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens.
+ *
+ * Every public color, font and size must come from docs/design-spec.md.
+ * These values are deliberately plain placeholders until the spec is pasted in;
+ * they will be replaced in one place here, and the whole site follows.
+ */
+@theme {
+  /* TODO(design-spec): replace with the locked palette and typefaces. */
+  --color-ink: #000000;
+  --color-paper: #ffffff;
+  --font-serif: ui-serif, Georgia, serif;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-serif);
+}
