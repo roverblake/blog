@@ -194,3 +194,6 @@ Below the lead post, the home page has a single "Latest" feed: the eight newest 
 
 ### Amendment: editing around blocks (Nov 26, 2026)
 In the editor: click the space between two blocks that aren't text (a quote and a link preview, two images) to start a new line there; Enter on an empty line, or the down arrow on the last line, leaves a quote; quotes, link previews and images show hover tools ("Plain text" for quotes, "Delete"). Link-preview titles drop a trailing publication name ("… - First Things").
+
+### Amendment: notes stay off the home page (Nov 26, 2026)
+Replaces "one home feed". Below the lead post, "Latest" lists the five newest posts only, with an "All posts" link. Notes are reached from the menu.
