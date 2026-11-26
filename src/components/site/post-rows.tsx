@@ -12,44 +12,43 @@ function meta(p: PostListItem, withYear: boolean) {
 
 /** §4 "The Latest" rows: type label, title in Caslon Text, date/meta, hairlines. */
 /**
- * Post rows: type label, title in Caslon Text with its italic subtitle, date,
- * and a small square thumbnail when the post has a header image. Short
- * commonplace quotations show in full instead of a title (Nov 26 amendments).
+ * Post rows, Substack-style: a small meta line (type · date), then the title in
+ * Caslon Text and its italic subtitle, with a square thumbnail at the right when
+ * the post has a header image. Short commonplace quotations show in full
+ * instead of a title (Nov 26 amendments).
  */
 export async function PostRows({ items, withYear = false, showType = true }: { items: PostListItem[]; withYear?: boolean; showType?: boolean }) {
   if (!items.length) return <p className="py-6 text-[18px] text-slate italic">Nothing here yet.</p>;
   const rows = await withThumbs(await withShortQuotes(items));
   return (
     <ul>
-      {rows.map((p) => (
-        <li key={p.id}>
-          <Link href={postPath(p)} className="flex items-start gap-4 border-b border-rule py-4 sm:gap-6">
-            <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-4 gap-y-1">
-              {showType && (
-                <span className="flex-[0_0_170px] text-[13px] uppercase tracking-[0.18em] text-label">{p.kicker || TYPE_LABEL[p.type]}</span>
-              )}
-              <span className="flex flex-[1_1_260px] flex-col gap-1">
+      {rows.map((p) => {
+        const line = [showType ? p.kicker || TYPE_LABEL[p.type] : null, meta(p, withYear)].filter(Boolean).join(" · ");
+        return (
+          <li key={p.id}>
+            <Link href={postPath(p)} className="group flex items-start gap-5 border-b border-rule py-6 sm:gap-8">
+              <span className="flex min-w-0 flex-1 flex-col gap-2">
+                {line && <span className="text-[13px] uppercase tracking-[0.18em] text-label">{line}</span>}
                 {p.quote ? (
                   <>
-                    <span className="font-caslon text-[20px] leading-[1.4] whitespace-pre-line italic">“{p.quote.replace(/^[“"]|[”"]$/g, "")}”</span>
+                    <span className="font-caslon text-[21px] leading-[1.4] whitespace-pre-line italic group-hover:underline group-hover:decoration-1 group-hover:underline-offset-4">“{p.quote.replace(/^[“"]|[”"]$/g, "")}”</span>
                     {p.cite && <span className="text-[16px] text-slate">{p.cite}</span>}
                   </>
                 ) : (
                   <>
-                    <span className="font-caslon text-[20px] leading-[1.3]">{p.title}</span>
-                    {p.subtitle && <span className="text-[17px] leading-[1.4] text-slate italic">{p.subtitle}</span>}
+                    <span className="font-caslon text-[22px] leading-[1.25] group-hover:underline group-hover:decoration-1 group-hover:underline-offset-4">{p.title}</span>
+                    {p.subtitle && <span className="text-[17px] leading-[1.45] text-slate italic">{p.subtitle}</span>}
                   </>
                 )}
               </span>
-              <span className="text-[16px] text-slate">{meta(p, withYear)}</span>
-            </span>
-            {p.thumb && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={p.thumb} alt="" loading="lazy" className="block h-16 w-16 shrink-0 object-cover sm:h-[88px] sm:w-[88px]" />
-            )}
-          </Link>
-        </li>
-      ))}
+              {p.thumb && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={p.thumb} alt="" loading="lazy" className="mt-1 block h-[72px] w-[72px] shrink-0 object-cover sm:h-24 sm:w-24" />
+              )}
+            </Link>
+          </li>
+        );
+      })}
     </ul>
   );
 }

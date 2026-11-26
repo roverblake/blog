@@ -77,12 +77,13 @@ export function PostArticle({
           <ArticleBody doc={bodyDoc} dropCap={false} fadeLast={truncated} />
           {truncated && <SubscriberGate list="essays" returnTo={postPath(post)} />}
           {tags.length > 0 && (
-            <div className="mt-6 flex flex-wrap items-center gap-2.5 border-t border-rule pt-4.5 text-[15px] leading-normal">
-              <span className="mr-1.5 uppercase tracking-[0.16em] text-slate">Filed under</span>
-              {tags.map((t) => (
-                <Link key={t.slug} href={`/tags/${t.slug}`} className="inline-flex min-h-11 items-center border border-rule px-3 no-underline sm:min-h-0 sm:py-1">
-                  {t.name}
-                </Link>
+            <div className="mt-6 flex flex-wrap items-baseline gap-x-2 border-t border-rule pt-4.5 text-[17px] leading-normal">
+              <span className="mr-1 text-[13px] uppercase tracking-[0.16em] text-slate">Filed under</span>
+              {tags.map((t, i) => (
+                <span key={t.slug}>
+                  <Link href={`/tags/${t.slug}`} className="text-ink no-underline hover:underline">{t.name}</Link>
+                  {i < tags.length - 1 && <span aria-hidden="true" className="text-slate">&nbsp;·</span>}
+                </span>
               ))}
             </div>
           )}
@@ -145,13 +146,14 @@ export function PostArticle({
         {truncated && <SubscriberGate list={post.type === "parish_letter" ? "parish" : "essays"} returnTo={postPath(post)} />}
 
         {tags.length > 0 && (
-          <div className="mt-6 flex flex-wrap items-center gap-2.5 border-t border-rule pt-4.5 text-[15px] leading-normal">
-            <span className="mr-1.5 uppercase tracking-[0.16em] text-slate">Filed under</span>
-            {tags.map((t) => (
-              <Link key={t.slug} href={`/tags/${t.slug}`} className="inline-flex min-h-11 items-center border border-rule px-3 no-underline sm:min-h-0 sm:py-1">
-                {t.name}
-              </Link>
-            ))}
+          <div className="mt-6 flex flex-wrap items-baseline gap-x-2 border-t border-rule pt-4.5 text-[17px] leading-normal">
+              <span className="mr-1 text-[13px] uppercase tracking-[0.16em] text-slate">Filed under</span>
+              {tags.map((t, i) => (
+                <span key={t.slug}>
+                  <Link href={`/tags/${t.slug}`} className="text-ink no-underline hover:underline">{t.name}</Link>
+                  {i < tags.length - 1 && <span aria-hidden="true" className="text-slate">&nbsp;·</span>}
+                </span>
+              ))}
           </div>
         )}
         <div className={`${tags.length > 0 ? "mt-3" : "mt-6 border-t border-rule pt-4.5"}`}>

@@ -152,3 +152,9 @@ On the home page, a commonplace post whose quotation is 45 words or fewer shows 
 
 ### Amendment: fully locked subscriber posts (Nov 26, 2026)
 A subscribers-only post can be set to "Title and subtitle only" in the post's Settings. Visitors who aren't subscribed see the kicker, title, subtitle, byline and header image, then the existing subscriber box; none of the text is sent to the browser. On the home page such a post shows no opening paragraph, only "Continue reading".
+
+### Amendment: public cleanup (Nov 26, 2026)
+- Post rows (everywhere): Substack-style stacking. A 13px uppercase meta line (type · date · Subscribers), then the title (Caslon Text 22px; hover underline) and italic subtitle, with a 96px square thumbnail at the right (72px on phones). Rows have 24px of space above and below. This replaces the three-column row, so long labels no longer wrap.
+- Home: "From the Commonplace Book" is removed (short quotes already appear in Recent); it stays on the Commonplace page.
+- Archive: search is a single thin underline field (press Enter); type filters are small-caps words with the selected one underlined; tags are a plain "Tags:" line separated by middle dots; posts are grouped under one section label per month ("November 2026").
+- End of posts: "Filed under" and "Share" are plain text links separated by middle dots, not boxed buttons.

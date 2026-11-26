@@ -4,17 +4,15 @@ import { LeadStory } from "@/components/site/lead-story";
 import { Masthead } from "@/components/site/masthead";
 import { NewsletterBox } from "@/components/site/newsletter-box";
 import { PostRows } from "@/components/site/post-rows";
-import { QuoteGrid } from "@/components/site/quotes";
-import { getCommonplaceQuotes, getImage, getLeadPost, listPosts, openingOf } from "@/lib/posts";
+import { getImage, getLeadPost, listPosts, openingOf } from "@/lib/posts";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const lead = await getLeadPost();
-  const [image, latest, quotes] = await Promise.all([
+  const [image, latest] = await Promise.all([
     getImage(lead?.headerImageId ?? null),
     listPosts({ excludeIds: lead ? [lead.id] : [], limit: 5 }),
-    getCommonplaceQuotes(2),
   ]);
 
   return (
@@ -35,15 +33,6 @@ export default async function Home() {
 
         <NewsletterBox />
 
-        {quotes.length > 0 && (
-          <section aria-labelledby="commonplace-heading">
-            <div className="section-label">
-              <h2 id="commonplace-heading">From the Commonplace Book</h2>
-              <Link href="/commonplace">More…</Link>
-            </div>
-            <QuoteGrid quotes={quotes} />
-          </section>
-        )}
       </main>
       <SiteFooter />
     </>

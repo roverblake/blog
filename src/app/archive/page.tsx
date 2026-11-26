@@ -13,17 +13,17 @@ const TYPES: PostType[] = ["essay", "commonplace", "parish_letter"];
 
 type Search = Promise<{ type?: string; tag?: string; q?: string }>;
 
+/** Posts grouped by month, newest first: [["November 2026", posts], ...]. */
 function group(items: PostListItem[]) {
-  const years = new Map<number, Map<string, PostListItem[]>>();
+  const months = new Map<string, PostListItem[]>();
   for (const p of items) {
     if (!p.publishedAt) continue;
     const { year, monthName } = yearMonth(p.publishedAt);
-    if (!years.has(year)) years.set(year, new Map());
-    const months = years.get(year)!;
-    if (!months.has(monthName)) months.set(monthName, []);
-    months.get(monthName)!.push(p);
+    const key = `${monthName} ${year}`;
+    if (!months.has(key)) months.set(key, []);
+    months.get(key)!.push(p);
   }
-  return years;
+  return months;
 }
 
 function filterHref(type?: string, tag?: string, search?: string) {
@@ -41,71 +41,78 @@ export default async function ArchivePage({ searchParams }: { searchParams: Sear
   const tag = sp.tag || undefined;
   const search = sp.q?.trim().slice(0, 100) || undefined;
   const [items, tags] = await Promise.all([listPosts({ type, tagSlug: tag, search, limit: 2000 }), listAllTags()]);
-  const years = group(items);
+  const months = group(items);
 
-  const chip = (active: boolean) =>
-    `inline-flex min-h-11 items-center border px-3 text-[15px] ${active ? "border-ink text-ink" : "border-rule text-slate"}`;
+  const tab = (active: boolean) =>
+    `inline-flex min-h-11 items-center border-b text-[13px] uppercase tracking-[0.2em] sm:min-h-0 sm:pb-1 ${active ? "border-ink text-ink" : "border-transparent text-slate hover:text-ink"}`;
 
   return (
     <PageShell>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-7">
         <div className="section-label">
           <h1>Archive</h1>
         </div>
-        <form role="search" action="/archive" className="inline-form inline-form-sm max-w-reading">
+        <form role="search" action="/archive" className="max-w-reading">
           <label htmlFor="archive-q" className="sr-only">Search the archive</label>
-          <input id="archive-q" name="q" type="search" defaultValue={search ?? ""} placeholder="Search the archive" />
+          <input
+            id="archive-q"
+            name="q"
+            type="search"
+            defaultValue={search ?? ""}
+            placeholder="Search the archive…"
+            className="w-full border-0 border-b border-rule bg-transparent py-2 text-[19px] outline-none placeholder:text-slate placeholder:italic focus:border-ink"
+          />
           {type && <input type="hidden" name="type" value={type} />}
           {tag && <input type="hidden" name="tag" value={tag} />}
-          <button type="submit" className="btn-primary">Search</button>
+          <button type="submit" className="sr-only">Search</button>
         </form>
-        {search && (
-          <p className="m-0 text-[17px] text-slate">
-            {items.length === 1 ? "1 result" : `${items.length} results`} for “{search}” ·{" "}
-            <Link href={filterHref(type, tag)} className="italic">Clear search</Link>
-          </p>
-        )}
-        <nav aria-label="Filter by type" className="flex flex-wrap items-center gap-2.5">
-          <span className="mr-1.5 text-[14px] uppercase tracking-[0.16em] text-slate">Type</span>
-          <Link href={filterHref(undefined, tag, search)} className={chip(!type)} aria-current={!type ? "page" : undefined}>
-            All
-          </Link>
-          {TYPES.map((t) => (
-            <Link key={t} href={filterHref(t, tag, search)} className={chip(type === t)} aria-current={type === t ? "page" : undefined}>
-              {TYPE_PLURAL[t]}
-            </Link>
-          ))}
-        </nav>
-        {tags.length > 0 && (
-          <nav aria-label="Filter by tag" className="flex flex-wrap items-center gap-2.5">
-            <span className="mr-1.5 text-[14px] uppercase tracking-[0.16em] text-slate">Tag</span>
-            <Link href={filterHref(type, undefined, search)} className={chip(!tag)} aria-current={!tag ? "page" : undefined}>
+        <div className="flex flex-col gap-3">
+          <nav aria-label="Filter by type" className="flex flex-wrap items-center gap-x-6 gap-y-1">
+            <Link href={filterHref(undefined, tag, search)} className={tab(!type)} aria-current={!type ? "page" : undefined}>
               All
             </Link>
-            {tags.map((t) => (
-              <Link key={t.slug} href={filterHref(type, t.slug, search)} className={chip(tag === t.slug)} aria-current={tag === t.slug ? "page" : undefined}>
-                {t.name}
+            {TYPES.map((t) => (
+              <Link key={t} href={filterHref(t, tag, search)} className={tab(type === t)} aria-current={type === t ? "page" : undefined}>
+                {TYPE_PLURAL[t]}
               </Link>
             ))}
           </nav>
+          {tags.length > 0 && (
+            <nav aria-label="Filter by tag" className="flex flex-wrap items-baseline gap-x-2 text-[16px] text-slate">
+              <span className="italic">Tags:</span>
+              {tags.map((t, i) => (
+                <span key={t.slug}>
+                  <Link
+                    href={tag === t.slug ? filterHref(type, undefined, search) : filterHref(type, t.slug, search)}
+                    className={tag === t.slug ? "text-ink underline decoration-1 underline-offset-4" : "text-slate hover:text-ink"}
+                    aria-current={tag === t.slug ? "page" : undefined}
+                  >
+                    {t.name}
+                  </Link>
+                  {i < tags.length - 1 && <span aria-hidden="true">&nbsp;·</span>}
+                </span>
+              ))}
+            </nav>
+          )}
+        </div>
+        {(search || tag) && (
+          <p className="m-0 text-[17px] text-slate">
+            {items.length === 1 ? "1 post" : `${items.length} posts`}
+            {search ? ` matching “${search}”` : ""}
+            {tag ? ` tagged ${tags.find((t) => t.slug === tag)?.name ?? tag}` : ""} ·{" "}
+            <Link href={filterHref(type)} className="italic">Clear</Link>
+          </p>
         )}
       </div>
 
-      {years.size === 0 && <p className="text-[18px] text-slate italic">{search ? "Nothing matches that search." : "Nothing here yet."}</p>}
+      {months.size === 0 && <p className="text-[18px] text-slate italic">{search ? "Nothing matches that search." : "Nothing here yet."}</p>}
 
-      {[...years.entries()].map(([year, months]) => (
-        <section key={year} aria-labelledby={`y-${year}`}>
-          <h2 id={`y-${year}`} className="m-0 font-display text-[38px] font-normal">
-            {year}
-          </h2>
-          {[...months.entries()].map(([month, posts]) => (
-            <div key={month} className="mt-6">
-              <div className="section-label">
-                <h3 className="m-0 text-[15px] font-semibold uppercase tracking-[0.24em]">{month}</h3>
-              </div>
-              <PostRows items={posts} />
-            </div>
-          ))}
+      {[...months.entries()].map(([month, posts]) => (
+        <section key={month} aria-label={month}>
+          <div className="section-label">
+            <h2>{month}</h2>
+          </div>
+          <PostRows items={posts} />
         </section>
       ))}
     </PageShell>
