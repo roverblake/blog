@@ -10,7 +10,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { saveDraft, uploadImage } from "@/app/studio/actions";
 import { countWords, readingMinutes } from "@/lib/content/text";
-import { Audio, BlockQuoteWithSource, FigureImage, Footnote, PullQuote, Paywall, Video } from "./extensions";
+import { Audio, BlockQuoteWithSource, FigureImage, Footnote, LinkCard, PullQuote, Paywall, Video } from "./extensions";
+import { getLinkPreview, getNoteBlocks, listInsertable, type PickItem } from "@/app/studio/link-actions";
 import { parseVideoUrl } from "@/lib/embeds";
 import { PostActions } from "./post-actions";
 import { SettingsPanel, type SettingsInitial } from "./settings-panel";
@@ -73,6 +74,8 @@ function slashItems(onError: (m: string) => void): SlashItem[] {
     { title: "Image", hint: "Upload a picture", run: (e, r) => { del(e, r).run(); pickImage(e, onError); } },
     { title: "Video", hint: "YouTube or Vimeo link", run: (e, r) => { del(e, r).run(); window.dispatchEvent(new CustomEvent("editor-embed", { detail: "video" })); } },
     { title: "Audio", hint: "Upload or link a recording", run: (e, r) => { del(e, r).run(); window.dispatchEvent(new CustomEvent("editor-embed", { detail: "audio" })); } },
+    { title: "Link preview", hint: "An article, shown as a reference", run: (e, r) => { del(e, r).run(); window.dispatchEvent(new CustomEvent("editor-embed", { detail: "link" })); } },
+    { title: "From my site", hint: "A past post or note", run: (e, r) => { del(e, r).run(); window.dispatchEvent(new CustomEvent("editor-embed", { detail: "pick" })); } },
     { title: "Footnote", hint: "Numbered note", run: (e, r) => del(e, r).insertFootnote("").run() },
     { title: "Paywall line", hint: "Subscribers only below", run: (e, r) => del(e, r).setPaywall().run() },
   ];
@@ -90,38 +93,30 @@ function autoGrow(el: HTMLTextAreaElement | null) {
 /* ---------------- Commonplace helpers ---------------- */
 type PType = EditorInitial["settings"]["type"];
 
-/** Pulls the leading pull quote (the commonplace quotation) out of a document. */
-function splitCommonplace(doc: JSONContent): { quote: string; source: string; rest: JSONContent[] } {
-  const blocks = doc.content ?? [];
-  const first = blocks[0];
-  if (first?.type !== "pullQuote") return { quote: "", source: "", rest: blocks };
-  const quote = (first.content ?? [])
-    .map((p) => (p.content ?? []).map((n) => (n.type === "hardBreak" ? "\n" : (n.text ?? ""))).join(""))
-    .join("\n\n");
-  return { quote, source: (first.attrs?.cite as string) ?? "", rest: blocks.slice(1) };
-}
-
-function quoteNode(quote: string, source: string): JSONContent {
-  const paras = quote.split(/\n\s*\n/).map((t) => t.replace(/\s*\n\s*/g, " ").trim()).filter(Boolean);
-  return {
-    type: "pullQuote",
-    attrs: { cite: source.trim() || null },
-    content: paras.map((t) => ({ type: "paragraph", content: [{ type: "text", text: t }] })),
-  };
+/** The first words of a note (its quote or first paragraph), used as its title for links and search. */
+function firstText(doc: JSONContent): string {
+  for (const b of doc.content ?? []) {
+    const walk = (n: JSONContent): string =>
+      n.type === "text" ? (n.text ?? "") : n.type === "hardBreak" ? " " : (n.content ?? []).map(walk).join(n.type === "pullQuote" || n.type === "blockquote" ? " " : "");
+    if (["paragraph", "pullQuote", "blockquote", "heading"].includes(b.type ?? "")) {
+      const t = walk(b).trim();
+      if (t) return t;
+    }
+    if (b.type === "linkCard" && b.attrs?.title) return String(b.attrs.title);
+  }
+  return "";
 }
 
 /** A short title from the opening words of the quote (used for links and search). */
 function titleFromQuote(quote: string): string {
+  if (!quote.trim()) return "Note";
   const words = quote.replace(/\s+/g, " ").trim().split(" ");
   if (words.length <= 9) return words.join(" ");
   return `${words.slice(0, 9).join(" ").replace(/[,;:.!?]+$/, "")}…`;
 }
 
 export function PostEditor({ initial }: { initial: EditorInitial }) {
-  const initSplit = initial.settings.type === "commonplace" ? splitCommonplace(initial.content) : null;
   const [ptype, setPtype] = useState<PType>(initial.settings.type);
-  const [quote, setQuote] = useState(initSplit?.quote ?? "");
-  const [source, setSource] = useState(initSplit?.source ?? "");
   const [title, setTitle] = useState(initial.title);
   const [subtitle, setSubtitle] = useState(initial.subtitle);
   const [saveState, setSaveState] = useState<SaveState>("saved");
@@ -132,11 +127,13 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
   const [grammarOpen, setGrammarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
-  const [embed, setEmbed] = useState<"video" | "audio" | null>(null);
+  const [embed, setEmbed] = useState<"video" | "audio" | "link" | "pick" | null>(null);
+  const [picks, setPicks] = useState<PickItem[]>([]);
+  const [linkBusy, setLinkBusy] = useState(false);
   const [embedValue, setEmbedValue] = useState("");
   const [uploadingAudio, setUploadingAudio] = useState(false);
   useEffect(() => {
-    const on = (e: Event) => { setEmbedValue(""); setEmbed((e as CustomEvent<"video" | "audio">).detail); };
+    const on = (e: Event) => { setEmbedValue(""); setEmbed((e as CustomEvent<"video" | "audio" | "link" | "pick">).detail); };
     window.addEventListener("editor-embed", on);
     return () => window.removeEventListener("editor-embed", on);
   }, []);
@@ -179,6 +176,7 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
       Footnote,
       Video,
       Audio,
+      LinkCard,
       createSlash(slashItems(onError), bridge),
     ],
     [onError],
@@ -186,7 +184,7 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
 
   const editor = useEditor({
     extensions,
-    content: initSplit ? { type: "doc", content: initSplit.rest.length ? initSplit.rest : [{ type: "paragraph" }] } : initial.content,
+    content: initial.content,
     immediatelyRender: false,
     editorProps: {
       attributes: { class: "article-body", spellcheck: "true", "aria-label": "Post body" },
@@ -219,6 +217,12 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
             editorRef.current.chain().focus().insertVideo(ref).run();
             return true;
           }
+          // Any other web address on an empty line becomes a link preview.
+          if (/^https?:\/\/\S+$/i.test(text) && editorRef.current) {
+            event.preventDefault();
+            void insertPreviewRef.current(text);
+            return true;
+          }
         }
         const images = [...(event.clipboardData?.files ?? [])].filter((f) => f.type.startsWith("image/"));
         if (!images.length) return false;
@@ -231,6 +235,36 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
   });
   const editorRef = useRef<Editor | null>(null);
   editorRef.current = editor;
+
+  /* Link previews: the server reads the page once to fill in its title and publication. */
+  const insertPreview = async (url: string) => {
+    setLinkBusy(true);
+    const res = await getLinkPreview(url).catch(() => ({ error: "Couldn't read that link." }));
+    setLinkBusy(false);
+    if ("error" in res) return setNotice(res.error);
+    editorRef.current?.chain().focus().insertLinkCard(res).run();
+    setEmbed(null);
+  };
+  const insertPreviewRef = useRef(insertPreview);
+  insertPreviewRef.current = insertPreview;
+
+  /* "From my site": recent posts and notes to pull in. */
+  useEffect(() => {
+    if (embed !== "pick") return;
+    const t = setTimeout(() => { listInsertable(embedValue).then(setPicks).catch(() => setPicks([])); }, 200);
+    return () => clearTimeout(t);
+  }, [embed, embedValue]);
+  const insertPick = async (p: PickItem) => {
+    const e = editorRef.current;
+    if (!e) return;
+    if (p.type === "commonplace") {
+      const blocks = await getNoteBlocks(p.id).catch(() => []);
+      if (blocks.length) e.chain().focus().insertContent([...blocks, { type: "paragraph" }]).run();
+    } else {
+      e.chain().focus().insertLinkCard({ href: p.href, title: p.title, site: p.label }).run();
+    }
+    setEmbed(null);
+  };
 
   const st = useEditorState({
     editor,
@@ -264,8 +298,8 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
   });
 
   /* ---------------- Autosave ---------------- */
-  const latest = useRef({ title, subtitle, ptype, quote, source });
-  latest.current = { title, subtitle, ptype, quote, source };
+  const latest = useRef({ title, subtitle, ptype });
+  latest.current = { title, subtitle, ptype };
   const save = useCallback(async () => {
     if (!editorRef.current) return;
     setSaveState("saving");
@@ -274,12 +308,12 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
       // when sent to the server; a JSON round-trip turns them into plain objects.
       const body = JSON.parse(JSON.stringify(editorRef.current.getJSON())) as { type: "doc"; content?: JSONContent[] };
       const L = latest.current;
-      const isCp = L.ptype === "commonplace";
-      const content = isCp && L.quote.trim() ? { type: "doc" as const, content: [quoteNode(L.quote, L.source), ...(body.content ?? [])] } : body;
+      // Notes have no title of their own; their opening words stand in for links and search.
+      const isNote = L.ptype === "commonplace";
       const res = await saveDraft(initial.id, {
-        title: isCp ? (L.quote.trim() ? titleFromQuote(L.quote) : L.title) : L.title,
-        subtitle: isCp ? "" : L.subtitle,
-        content,
+        title: isNote ? titleFromQuote(firstText(body)) : L.title,
+        subtitle: isNote ? "" : L.subtitle,
+        content: body,
       });
       setSavedAt(res.savedAt ? new Date(res.savedAt) : new Date());
       setSaveState((s) => (s === "saving" ? "saved" : s));
@@ -292,26 +326,12 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
     if (saveState !== "dirty" && saveState !== "error") return;
     const t = setTimeout(save, saveState === "error" ? 5000 : 1200);
     return () => clearTimeout(t);
-  }, [saveState, save, title, subtitle, quote, source]);
+  }, [saveState, save, title, subtitle]);
 
-  /* Switching to or from the Commonplace type moves the quote in or out of the text. */
+  /* Switching a note to a post gives it its opening words as a starting title. */
   const onTypeChange = (t: PType) => {
     const e = editorRef.current;
-    if (!e) return setPtype(t);
-    if (t === "commonplace" && ptype !== "commonplace") {
-      const sp = splitCommonplace(e.getJSON());
-      if (sp.quote) {
-        setQuote(sp.quote);
-        setSource(sp.source);
-        e.commands.setContent({ type: "doc", content: sp.rest.length ? sp.rest : [{ type: "paragraph" }] });
-      }
-    } else if (t !== "commonplace" && ptype === "commonplace" && quote.trim()) {
-      const doc = e.getJSON();
-      e.commands.setContent({ type: "doc", content: [quoteNode(quote, source), ...(doc.content ?? [])] });
-      if (!title.trim() || title === titleFromQuote(quote)) setTitle(titleFromQuote(quote));
-      setQuote("");
-      setSource("");
-    }
+    if (e && t !== "commonplace" && ptype === "commonplace" && !title.trim()) setTitle(titleFromQuote(firstText(e.getJSON())));
     setPtype(t);
     setSaveState("dirty");
   };
@@ -439,6 +459,8 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
                   {[
                     ["Video", "YouTube or Vimeo", () => { setEmbedValue(""); setEmbed("video"); }],
                     ["Audio", "Upload or link", () => { setEmbedValue(""); setEmbed("audio"); }],
+                    ["Link preview", "Article as a reference", () => { setEmbedValue(""); setEmbed("link"); }],
+                    ["From my site", "A past post or note", () => { setEmbedValue(""); setEmbed("pick"); }],
                     ["Divider", "· · ·", (e: Editor) => e.chain().focus().setHorizontalRule().run()],
                     ["Pull quote", "Centered between rules", (e: Editor) => e.chain().focus().setPullQuote().run()],
                     ["Footnote", "Numbered note", insertFootnote],
@@ -479,7 +501,52 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
             <button type="button" className="s-btn" onClick={() => { setLinkValue(""); editor?.chain().focus().unsetLink().run(); setLinkOpen(false); }}>Remove link</button>
           </div>
         )}
-        {embed && (
+        {embed === "link" && (
+          <div className="flex flex-wrap items-center justify-center gap-2 border-b border-rule px-6 py-2">
+            <label htmlFor="link-url" className="text-[15px] text-slate">Paste the article&apos;s link</label>
+            <input
+              id="link-url"
+              autoFocus
+              className="s-input max-w-[420px]"
+              value={embedValue}
+              placeholder="https://…"
+              onChange={(e) => setEmbedValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") { e.preventDefault(); if (embedValue.trim()) void insertPreview(embedValue.trim()); }
+                if (e.key === "Escape") setEmbed(null);
+              }}
+            />
+            <button type="button" className="s-btn" disabled={linkBusy || !embedValue.trim()} onClick={() => void insertPreview(embedValue.trim())}>
+              {linkBusy ? "Reading…" : "Add preview"}
+            </button>
+            <button type="button" className="s-btn" onClick={() => setEmbed(null)}>Cancel</button>
+          </div>
+        )}
+        {embed === "pick" && (
+          <div className="border-b border-rule px-6 py-3">
+            <div className="mx-auto flex max-w-[640px] flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <label htmlFor="pick-q" className="shrink-0 text-[15px] text-slate">Insert from my site</label>
+                <input id="pick-q" autoFocus className="s-input flex-1" placeholder="Search posts and notes…" value={embedValue} onChange={(e) => setEmbedValue(e.target.value)} onKeyDown={(e) => { if (e.key === "Escape") setEmbed(null); }} />
+                <button type="button" className="s-btn" onClick={() => setEmbed(null)}>Close</button>
+              </div>
+              <ul className="max-h-[260px] overflow-y-auto rounded-[10px] border border-[var(--ui-border)] bg-white">
+                {picks.length === 0 && <li className="px-3 py-2 text-[14px] text-slate">Nothing found.</li>}
+                {picks.map((p) => (
+                  <li key={p.id}>
+                    <button type="button" className="flex w-full items-baseline gap-3 px-3 py-2 text-left hover:bg-warm" onClick={() => void insertPick(p)}>
+                      <span className="w-[70px] shrink-0 text-[12px] text-slate">{p.label}</span>
+                      <span className="min-w-0 flex-1 truncate text-[15px]">{p.title}</span>
+                      <span className="shrink-0 text-[12px] text-slate">{p.date ? new Date(p.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : ""}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <p className="m-0 text-[13px] text-slate">A post goes in as a link preview. A note is copied in, so you can trim it or add a comment.</p>
+            </div>
+          </div>
+        )}
+        {(embed === "video" || embed === "audio") && (
           <div className="flex flex-wrap items-center justify-center gap-2 border-b border-rule px-6 py-2">
             <label htmlFor="embed-url" className="text-[15px] text-slate">
               {embed === "video" ? "Paste a YouTube or Vimeo link" : "Paste a link to an MP3, or"}
@@ -554,31 +621,10 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
       <main className="writing flex-1 px-6 pt-12 pb-32">
         <div className="mx-auto max-w-reading">
           {ptype === "commonplace" ? (
-            <>
-              <div className="text-center text-[13px] uppercase tracking-[0.26em] text-slate">Commonplace</div>
-              <div className="mt-6 border-t border-b border-ink py-7 text-center">
-                <label htmlFor="cp-quote" className="sr-only">Quotation</label>
-                <textarea
-                  id="cp-quote"
-                  ref={autoGrow}
-                  onInput={(e) => autoGrow(e.currentTarget)}
-                  rows={2}
-                  value={quote}
-                  onChange={(e) => { setQuote(e.target.value); setSaveState("dirty"); }}
-                  placeholder="Type or paste the quotation…"
-                  className="field-sizing-content w-full resize-none border-0 bg-transparent text-center font-caslon text-[28px] leading-[1.45] text-ink italic outline-none placeholder:text-[#b9b4ab] sm:text-[30px]"
-                />
-                <label htmlFor="cp-source" className="sr-only">Source</label>
-                <input
-                  id="cp-source"
-                  value={source}
-                  onChange={(e) => { setSource(e.target.value); setSaveState("dirty"); }}
-                  placeholder="Author · Work, chapter"
-                  className="mt-3 w-full border-0 bg-transparent text-center text-[14px] uppercase tracking-[0.16em] text-slate outline-none placeholder:normal-case placeholder:tracking-normal placeholder:text-[#b9b4ab]"
-                />
-              </div>
-              <p className="mt-6 mb-0 text-center text-[14px] text-slate italic">Your note goes below. Leave it empty to post the quotation on its own.</p>
-            </>
+            <div className="mb-2 border-b border-rule pb-4">
+              <div className="text-[13px] uppercase tracking-[0.26em] text-slate">Note</div>
+              <p className="mt-2 mb-0 text-[15px] text-slate italic">No title needed. Write your note; add a pull quote, a link preview or an image from the toolbar.</p>
+            </div>
           ) : (
             <>
               <label htmlFor="title" className="sr-only">Title</label>
@@ -655,7 +701,7 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
           </div>
           {grammarOpen && editor && <GrammarPanel editor={editor} dictionary={initial.dictionary} onClose={() => setGrammarOpen(false)} />}
           <div className={settingsOpen ? "" : "hidden"}>
-            <SettingsPanel id={initial.id} title={ptype === "commonplace" && quote.trim() ? titleFromQuote(quote) : title} status={initial.status} initial={initial.settings} onTypeChange={onTypeChange} />
+            <SettingsPanel id={initial.id} title={ptype === "commonplace" && editor ? titleFromQuote(firstText(editor.getJSON())) : title} status={initial.status} initial={initial.settings} onTypeChange={onTypeChange} />
           </div>
         </aside>
       )}

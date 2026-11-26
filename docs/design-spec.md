@@ -167,3 +167,15 @@ The compact signup box (home page and end of posts) now sits on the warm panel c
 
 ### Amendment: navy hover everywhere (Nov 26, 2026)
 Every link on the public site (titles in lists, the masthead name and menu, footer links, tags, archive filters, Sign in) now turns navy on hover with a soft 0.15s fade, instead of some links turning black or underlining. Navy remains reserved for hover, Subscribe, "Continue reading" and checkboxes. Planned link previews use black rules (not the warm grey hairline).
+
+### Amendment: Notes replace the Commonplace Book (Nov 26, 2026)
+There are two kinds of writing: Posts (essays, letters, sermons) and Notes. A note has no title. It can hold a pull quote with its source, a short comment, images, video, audio and link previews. The section is called "Notes" (menu, home, footer, archive) and lives at /notes; old /commonplace addresses redirect there. Notes appear as a stream: a small-caps date line ("Friday · Nov 20"), then the note in full. The home page shows the latest three notes under "Notes", below Recent and above the signup box. A single note page opens with "Note · Friday, November 20, 2026" and ends with "← All notes".
+
+### Amendment: link previews (Nov 26, 2026, chosen by Blake: style A)
+A link can be shown as a preview block: publication in small caps (11px, slate), the article title (Caslon 20px), then "by Author · Read at domain →" in italic slate. It sits between two black rules (1px, `#000`), inset 40px on each side (12px on phones), with no box or fill. On hover only the title turns navy. In the editor: paste a link on an empty line, or choose More → Link preview; the publication, title and author are filled in automatically and can be edited.
+
+### Amendment: insert from my site (Nov 26, 2026)
+In the editor, More → From my site lists recent writing. A post goes in as a link preview; a note is copied in. There is no automatic weekly digest email.
+
+### Amendment: fewer lines (Nov 26, 2026)
+Lines are kept only where they separate sections. Removed: the rule under the compact header, the second rule inside the footer, the rule after the last row of any list, and the rules between "More to read" items. Remaining rules: section labels, between rows, link previews, and the top of the footer.

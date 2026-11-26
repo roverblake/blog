@@ -25,8 +25,8 @@ export async function PostRows({ items, withYear = false, showType = true }: { i
       {rows.map((p) => {
         const line = [showType ? p.kicker || TYPE_LABEL[p.type] : null, meta(p, withYear)].filter(Boolean).join(" · ");
         return (
-          <li key={p.id}>
-            <Link href={postPath(p)} className="group flex items-start gap-5 border-b border-rule py-6 sm:gap-8">
+          <li key={p.id} className="border-b border-rule last:border-b-0">
+            <Link href={postPath(p)} className="group flex items-start gap-5 py-6 sm:gap-8">
               <span className="flex min-w-0 flex-1 flex-col gap-2">
                 {line && <span className="text-[13px] uppercase tracking-[0.18em] text-label">{line}</span>}
                 {p.quote ? (
@@ -63,7 +63,7 @@ export function MoreToRead({ items }: { items: PostListItem[] }) {
       </div>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-x-10">
         {items.map((p) => (
-          <Link key={p.id} href={postPath(p)} className="flex flex-col gap-1.5 border-b border-rule py-4.5">
+          <Link key={p.id} href={postPath(p)} className="flex flex-col gap-1.5 py-4.5">
             <span className="text-[13px] uppercase tracking-[0.18em] text-label">{p.kicker || TYPE_LABEL[p.type]}</span>
             <span className="font-caslon text-[21px] leading-[1.25]">{p.title}</span>
             {p.subtitle && <span className="text-[17px] text-slate italic">{p.subtitle}</span>}

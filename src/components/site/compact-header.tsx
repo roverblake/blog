@@ -5,7 +5,7 @@ import { getSiteIdentity } from "@/lib/site-identity";
 export async function CompactHeader() {
   const site = await getSiteIdentity();
   return (
-    <header className="border-b border-rule">
+    <header>
       <div className="mx-auto flex max-w-site flex-wrap items-center justify-between gap-x-8 gap-y-2 px-6 py-3.5">
         <Link href="/" className="font-display text-[28px] leading-none sm:text-[34px]">
           {site.title}

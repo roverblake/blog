@@ -249,8 +249,44 @@
     font-size: 30px;
     padding: 28px 0;
   }
-  .commonplace-note.article-body {
+  .note-body.article-body {
     font-size: 19px;
+  }
+  /* Link preview: a reference set between black rules, inset (Nov 26 amendment) */
+  .article-body .link-ref,
+  .link-ref {
+    display: block;
+    margin: 4px 40px;
+    padding: 16px 4px;
+    border-top: 1px solid var(--color-ink);
+    border-bottom: 1px solid var(--color-ink);
+    text-decoration: none;
+    color: var(--color-ink);
+  }
+  .link-ref-site {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-slate);
+  }
+  .link-ref-title {
+    display: block;
+    margin-top: 4px;
+    font-family: var(--font-display);
+    font-size: 20px;
+    line-height: 1.25;
+    transition: color 0.15s ease;
+  }
+  .link-ref-meta {
+    display: block;
+    margin-top: 2px;
+    font-size: 15px;
+    font-style: italic;
+    color: var(--color-slate);
+  }
+  .link-ref:hover .link-ref-title {
+    color: var(--color-navy);
   }
   .article-body .pull-quote p + p {
     margin-top: 12px;
@@ -472,6 +508,10 @@
 
   /* Phones: body 17px, drop cap shrinks proportionally (66px at 16px) */
   @media (max-width: 640px) {
+    .article-body .link-ref,
+    .link-ref {
+      margin: 4px 12px;
+    }
     .article-body {
       font-size: 17px;
       gap: 20px;
@@ -482,7 +522,7 @@
     .article-body .commonplace-quote {
       font-size: 24px;
     }
-    .commonplace-note.article-body {
+    .note-body.article-body {
       font-size: 17px;
     }
     .article-body .block-quote blockquote,

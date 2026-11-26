@@ -38,6 +38,10 @@ export function docToMarkdown(doc: Doc, mapImage: (src: string) => string = (s) 
         const url = a.provider === "vimeo" ? `https://vimeo.com/${a.id}` : `https://www.youtube.com/watch?v=${a.id}`;
         return `[Video${a.caption ? `: ${a.caption}` : ""}](${url})`;
       }
+      case "linkCard": {
+        const a = (b as { attrs?: { href?: string; title?: string | null; site?: string | null; author?: string | null } }).attrs ?? {};
+        return `> [${a.title || a.href}](${a.href})${a.site || a.author ? `  \n> ${[a.site, a.author].filter(Boolean).join(" · ")}` : ""}`;
+      }
       case "audio": {
         const a = (b as { attrs?: { src?: string; title?: string | null } }).attrs ?? {};
         return `[Audio${a.title ? `: ${a.title}` : ""}](${a.src})`;

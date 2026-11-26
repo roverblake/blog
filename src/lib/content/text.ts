@@ -16,6 +16,8 @@ function blockText(node: BlockNode): string {
     case "orderedList":
     case "pullQuote":
       return (node.content ?? []).map((c) => blockText(c as BlockNode)).join("\n");
+    case "linkCard":
+      return node.attrs?.title ?? "";
     default:
       return "";
   }

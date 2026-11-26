@@ -28,7 +28,7 @@ export async function SiteFooter() {
             ))}
           </nav>
         </div>
-        <div className="flex flex-wrap justify-between gap-3 border-t border-footer-rule pt-4 text-[14px] text-footer-muted">
+        <div className="flex flex-wrap justify-between gap-3 pt-2 text-[14px] text-footer-muted">
           <span>© {year()} {site.title}</span>
           <span className="inline-flex flex-wrap gap-3">
             {footer.credit && (

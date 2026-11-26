@@ -37,6 +37,8 @@ export type ImageNode = {
 };
 export type VideoNode = { type: "video"; attrs: { provider: "youtube" | "vimeo"; id: string; caption?: string | null } };
 export type AudioNode = { type: "audio"; attrs: { src: string; title?: string | null; caption?: string | null } };
+/** A link shown as a reference block: publication, title, author (Nov 26 amendment). */
+export type LinkCardNode = { type: "linkCard"; attrs: { href: string; title?: string | null; site?: string | null; author?: string | null } };
 /** Everything after this node is for subscribers only. */
 export type PaywallNode = { type: "paywall" };
 
@@ -52,6 +54,7 @@ export type BlockNode =
   | ImageNode
   | VideoNode
   | AudioNode
+  | LinkCardNode
   | PaywallNode;
 
 export type Doc = { type: "doc"; content?: BlockNode[] };

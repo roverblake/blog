@@ -23,6 +23,7 @@ declare module "@tiptap/core" {
     footnote: { insertFootnote: (text: string) => ReturnType };
     video: { insertVideo: (attrs: { provider: "youtube" | "vimeo"; id: string }) => ReturnType };
     audio: { insertAudio: (attrs: { src: string; title?: string }) => ReturnType };
+    linkCard: { insertLinkCard: (attrs: { href: string; title?: string; site?: string; author?: string }) => ReturnType };
   }
 }
 
@@ -246,6 +247,45 @@ export const Audio = Node.create({
         (attrs: { src: string; title?: string }) =>
         ({ commands }: { commands: { insertContent: (c: object) => boolean } }) =>
           commands.insertContent([{ type: "audio", attrs }, { type: "paragraph" }]),
+    };
+  },
+});
+
+function LinkCardView({ node, updateAttributes, selected }: ReactNodeViewProps) {
+  const a = node.attrs as { href: string; title: string | null; site: string | null; author: string | null };
+  let host = "";
+  try { host = a.href.startsWith("/") ? "" : new URL(a.href).hostname.replace(/^www\./, ""); } catch { /* ignore */ }
+  return (
+    <NodeViewWrapper data-drag-handle className={`link-ref link-ref-edit ${selected ? "ProseMirror-selectednode" : ""}`}>
+      <input className="link-ref-site w-full border-0 bg-transparent outline-none" placeholder="PUBLICATION" aria-label="Publication" value={a.site ?? ""} onChange={(e) => updateAttributes({ site: e.target.value })} />
+      <input className="link-ref-title w-full border-0 bg-transparent outline-none" placeholder="Title" aria-label="Title" value={a.title ?? ""} onChange={(e) => updateAttributes({ title: e.target.value })} />
+      <div className="link-ref-meta flex items-baseline gap-1" contentEditable={false}>
+        <span>by</span>
+        <input className="min-w-0 flex-1 border-0 bg-transparent italic outline-none" placeholder="Author (optional)" aria-label="Author" value={a.author ?? ""} onChange={(e) => updateAttributes({ author: e.target.value })} />
+        <span className="shrink-0">{host ? `Read at ${host} →` : "Read →"}</span>
+      </div>
+    </NodeViewWrapper>
+  );
+}
+
+/** A link shown as a reference block (publication, title, author) between black rules. */
+export const LinkCard = Node.create({
+  name: "linkCard",
+  group: "block",
+  atom: true,
+  draggable: true,
+  addAttributes: () => ({ href: { default: "" }, title: { default: null }, site: { default: null }, author: { default: null } }),
+  parseHTML: () => [{ tag: "a[data-link-card]" }],
+  renderHTML: ({ HTMLAttributes }: { HTMLAttributes: Record<string, string> }) => ["a", { "data-link-card": "", href: HTMLAttributes.href }, HTMLAttributes.title ?? ""],
+  addNodeView() {
+    return ReactNodeViewRenderer(LinkCardView, ownInputs);
+  },
+  addCommands() {
+    return {
+      insertLinkCard:
+        (attrs: { href: string; title?: string; site?: string; author?: string }) =>
+        ({ commands }: { commands: { insertContent: (c: object) => boolean } }) =>
+          commands.insertContent([{ type: "linkCard", attrs }, { type: "paragraph" }]),
     };
   },
 });

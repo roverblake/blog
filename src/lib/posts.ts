@@ -3,7 +3,7 @@ import { and, desc, eq, inArray, ne, sql, type SQL } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { asDoc } from "@/lib/content/types";
 import { gateDoc } from "@/lib/content/gate";
-import { countWords, firstParagraphText, firstQuote, readingMinutes } from "@/lib/content/text";
+import { countWords, firstQuote, readingMinutes } from "@/lib/content/text";
 import { mediaUrl } from "@/lib/urls";
 
 const { posts, tags, postTags, media } = schema;
@@ -148,33 +148,21 @@ export async function getLeadPost() {
   const essay = await db.select().from(posts).where(and(isLive(), eq(posts.type, "essay")))
     .orderBy(desc(posts.publishedAt)).limit(1);
   if (essay[0]) return essay[0];
-  const any = await db.select().from(posts).where(isLive()).orderBy(desc(posts.publishedAt)).limit(1);
+  const any = await db.select().from(posts).where(and(isLive(), ne(posts.type, "commonplace"))).orderBy(desc(posts.publishedAt)).limit(1);
   return any[0] ?? null;
 }
 
-/** Quotes for "From the Commonplace Book": the first quote in recent notes. */
-export async function getCommonplaceQuotes(limit = 2) {
-  const rows = await db
-    .select({ id: posts.id, type: posts.type, slug: posts.slug, title: posts.title, summary: posts.summary, visibility: posts.visibility, fullyLocked: posts.fullyLocked, content: posts.content })
-    .from(posts)
-    .where(and(isLive(), eq(posts.type, "commonplace")))
-    .orderBy(desc(posts.publishedAt))
-    .limit(limit * 3);
-  return rows
-    .map(({ content, visibility, fullyLocked, ...r }) => {
-      // Only look at the free part of the note, never past a paywall line.
-      const { doc } = gateDoc(asDoc(content), { gated: visibility === "subscribers", hasAccess: false, locked: fullyLocked });
-      const q = firstQuote(doc);
-      const text = q?.text || r.summary || firstParagraphText(doc);
-      return text ? { ...r, quote: text, cite: q?.cite ?? null } : null;
-    })
-    .filter((r): r is NonNullable<typeof r> => r !== null)
-    .slice(0, limit);
+/** Post types shown as titled posts (everything except notes). */
+export const POST_TYPES: PostType[] = ["essay", "parish_letter", "sermon"];
+
+/** Recent published notes, full rows (always pass them through viewablePost before rendering). */
+export async function listNotes(limit = 50, offset = 0) {
+  return db.select().from(posts).where(and(isLive(), eq(posts.type, "commonplace"))).orderBy(desc(posts.publishedAt)).limit(limit).offset(offset);
 }
 
 /** "More to read": recent posts other than this one. */
 export async function getMoreToRead(excludeId: string, limit = 3) {
-  return listPosts({ excludeIds: [excludeId], limit });
+  return listPosts({ type: POST_TYPES, excludeIds: [excludeId], limit });
 }
 
 export async function listAllTags() {

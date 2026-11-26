@@ -4,15 +4,19 @@ import { LeadStory } from "@/components/site/lead-story";
 import { Masthead } from "@/components/site/masthead";
 import { NewsletterBox } from "@/components/site/newsletter-box";
 import { PostRows } from "@/components/site/post-rows";
-import { getImage, getLeadPost, listPosts, openingOf } from "@/lib/posts";
+import { NoteStream } from "@/components/site/note-stream";
+import { getImage, getLeadPost, listNotes, listPosts, openingOf, POST_TYPES, viewablePost } from "@/lib/posts";
+import { getViewer } from "@/lib/viewer";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const lead = await getLeadPost();
-  const [image, latest] = await Promise.all([
+  const [image, latest, notes, viewer] = await Promise.all([
     getImage(lead?.headerImageId ?? null),
-    listPosts({ excludeIds: lead ? [lead.id] : [], limit: 5 }),
+    listPosts({ type: POST_TYPES, excludeIds: lead ? [lead.id] : [], limit: 5 }),
+    listNotes(3),
+    getViewer(),
   ]);
 
   return (
@@ -30,6 +34,16 @@ export default async function Home() {
             <PostRows items={latest} />
           </div>
         </section>
+
+        {notes.length > 0 && (
+          <section className="mx-auto w-full max-w-lead" aria-labelledby="notes-heading">
+            <div className="section-label">
+              <h2 id="notes-heading">Notes</h2>
+              <Link href="/notes">More…</Link>
+            </div>
+            <NoteStream notes={notes.map((n) => viewablePost(n, viewer.hasAccess)) as never} />
+          </section>
+        )}
 
         <NewsletterBox />
 

@@ -182,6 +182,26 @@ function renderBlock(b: BlockNode, i: number, ctx: Ctx): ReactNode {
         </figure>
       );
     }
+    case "linkCard": {
+      const { href: raw, title, site, author } = b.attrs ?? { href: "" };
+      const href = safeHref(raw);
+      if (!href) return null;
+      const internal = href.startsWith("/");
+      let host = "";
+      if (!internal) {
+        try { host = new URL(href).hostname.replace(/^www\./, ""); } catch { /* ignore */ }
+      }
+      return (
+        <a key={i} href={href} className="link-ref" {...(internal ? {} : { rel: "noopener" })}>
+          {site && <span className="link-ref-site">{site}</span>}
+          <span className="link-ref-title">{title || host || href}</span>
+          <span className="link-ref-meta">
+            {author ? `by ${author} · ` : ""}
+            {internal ? "Read →" : `Read at ${host} →`}
+          </span>
+        </a>
+      );
+    }
     case "audio": {
       const { src, title, caption } = b.attrs ?? { src: "" };
       const href = safeHref(src);

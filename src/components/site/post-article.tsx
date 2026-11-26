@@ -2,13 +2,12 @@ import Link from "next/link";
 import { ArticleBody } from "@/components/article-body";
 import { readingMinutes } from "@/lib/content/text";
 import type { Doc } from "@/lib/content/types";
-import { fullDate } from "@/lib/dates";
+import { fullDate, longDate } from "@/lib/dates";
 import type { Image, PostListItem } from "@/lib/posts";
 import type { posts } from "@/db/schema";
 import { postPath, TYPE_LABEL } from "@/lib/urls";
 import { MoreToRead } from "./post-rows";
 import { SubscriberGate } from "./subscriber-gate";
-import { FleurDeLis } from "./fleuron-rule";
 import { NewsletterBox } from "./newsletter-box";
 
 /** A post without its full text; pass the gated document separately. */
@@ -38,41 +37,17 @@ export function PostArticle({
   const kicker = post.kicker || TYPE_LABEL[post.type];
   const minutes = readingMinutes(post.wordCount);
 
-  // Commonplace: the quote leads, then a small ornament, then the note.
-  const isCommonplace = post.type === "commonplace";
-  const first = doc.content?.[0];
-  const quote = isCommonplace && first?.type === "pullQuote" ? first : null;
-  const bodyDoc: Doc = quote ? { ...doc, content: doc.content!.slice(1) } : doc;
-
-  if (isCommonplace) {
+  // Notes have no title: the date, then the note itself (Nov 26 amendment).
+  if (post.type === "commonplace") {
     return (
       <article>
         <div className="mx-auto max-w-reading px-6 pt-14 sm:pt-20">
-          <div className="text-center text-[13px] uppercase tracking-[0.26em] text-slate sm:text-[14px]">
-            {post.kicker || "Commonplace"} · <time dateTime={date.toISOString()}>{fullDate(date)}</time>
+          <div className="text-[13px] uppercase tracking-[0.26em] text-slate sm:text-[14px]">
+            {post.kicker || "Note"} · <time dateTime={date.toISOString()}>{longDate(date)}</time>
           </div>
-          {quote ? (
-            <div className="article-body mt-8">
-              <blockquote className="pull-quote commonplace-quote">
-                {(quote.content ?? []).map((p, j) => (
-                  <p key={j}>{(p.content ?? []).map((n, k) => (n.type === "text" ? n.text : n.type === "hardBreak" ? <br key={k} /> : null))}</p>
-                ))}
-                {quote.attrs?.cite ? <cite>{quote.attrs.cite}</cite> : null}
-              </blockquote>
-            </div>
-          ) : (
-            <h1 className="m-0 mt-6 text-center font-display text-[40px] leading-[1.1] font-normal">{post.title}</h1>
-          )}
-          {(bodyDoc.content?.length ?? 0) > 0 && (
-            <div className="mt-10 flex items-center justify-center gap-3 text-ink" aria-hidden="true">
-              <span className="h-px w-10 bg-rule" />
-              <FleurDeLis className="h-4 w-4" />
-              <span className="h-px w-10 bg-rule" />
-            </div>
-          )}
         </div>
-        <div className="article-body commonplace-note mx-auto max-w-reading px-6 pt-8 pb-6">
-          <ArticleBody doc={bodyDoc} dropCap={false} fadeLast={truncated} />
+        <div className="article-body note-body mx-auto max-w-reading px-6 pt-6 pb-6">
+          <ArticleBody doc={doc} dropCap={false} fadeLast={truncated} />
           {truncated && <SubscriberGate list="essays" returnTo={postPath(post)} />}
           {tags.length > 0 && (
             <div className="mt-6 flex flex-wrap items-baseline gap-x-2 border-t border-rule pt-4.5 text-[17px] leading-normal">
@@ -85,6 +60,7 @@ export function PostArticle({
               ))}
             </div>
           )}
+          <p className="mt-8 mb-0 text-[16px] italic"><Link href="/notes" className="text-slate no-underline hover:text-navy">← All notes</Link></p>
         </div>
         {!truncated && (
           <div className="mx-auto box-border max-w-reading px-6 pt-4 pb-6">

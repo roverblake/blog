@@ -8,7 +8,7 @@ export type SettingsInitial = PostSettings & { headerImageSrc: string | null; he
 
 const TYPES = [
   ["essay", "Essay"],
-  ["commonplace", "Commonplace note"],
+  ["commonplace", "Note"],
   ["parish_letter", "Parish letter"],
 ] as const;
 

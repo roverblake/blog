@@ -51,3 +51,6 @@ export function utcToChicagoLocal(d: Date): string {
 /** "Dec 1, 2026, 9:00 AM" in Chicago time. */
 export const dateTime = (d: Date) =>
   fmt({ year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(d);
+
+/** "Thursday · Nov 26" (notes) */
+export const noteDate = (d: Date) => `${fmt({ weekday: "long" }).format(d)} · ${monthDay(d)}`;

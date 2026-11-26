@@ -78,6 +78,16 @@ function block(b: BlockNode, notes: string[], base: string): string {
       const img = thumb ? `<img src="${e(abs(thumb, base))}" alt="Watch the video" width="560" style="display:block;width:100%;max-width:560px;height:auto;border:0;">` : `<span style="display:block;padding:40px 0;background:${S.ink};color:#fff;text-align:center;">Watch the video</span>`;
       return `<div style="margin:8px 0 22px;"><a href="${link}">${img}</a><div style="padding-top:6px;font-size:14px;font-style:italic;color:${S.slate};">${caption ? e(caption) + " · " : ""}<a href="${link}" style="color:${S.slate};">Watch on ${provider === "youtube" ? "YouTube" : "Vimeo"}</a></div></div>`;
     }
+    case "linkCard": {
+      const { href, title, site, author } = b.attrs ?? ({} as { href?: string; title?: string | null; site?: string | null; author?: string | null });
+      const h = safeHref(href);
+      if (!h) return "";
+      const url = abs(h, base);
+      let host = "";
+      try { host = new URL(url).hostname.replace(/^www\./, ""); } catch { /* ignore */ }
+      const internal = h.startsWith("/");
+      return `<a href="${e(url)}" style="display:block;margin:6px 24px 24px;padding:14px 4px;border-top:1px solid ${S.ink};border-bottom:1px solid ${S.ink};text-decoration:none;color:${S.ink};">${site ? `<span style="display:block;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:${S.slate};">${e(site)}</span>` : ""}<span style="display:block;font-size:20px;line-height:1.25;margin-top:4px;">${e(title || host || h)}</span><span style="display:block;font-size:15px;font-style:italic;color:${S.slate};margin-top:2px;">${author ? `by ${e(author)} · ` : ""}${internal ? "Read &rarr;" : `Read at ${e(host)} &rarr;`}</span></a>`;
+    }
     case "audio": {
       const { src, title } = b.attrs ?? ({} as { src?: string; title?: string | null });
       if (!src) return "";

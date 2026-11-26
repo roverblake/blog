@@ -5,25 +5,26 @@ type PostType = (typeof posts.$inferSelect)["type"];
 /** URL section for each post type. */
 export const TYPE_PATH: Record<PostType, string> = {
   essay: "essays",
-  commonplace: "commonplace",
+  commonplace: "notes",
   parish_letter: "letters",
   sermon: "sermons",
 };
 
 export const TYPE_LABEL: Record<PostType, string> = {
   essay: "Essay",
-  commonplace: "Commonplace",
+  commonplace: "Note",
   parish_letter: "Letter to the Parish",
   sermon: "Sermon",
 };
 
 export const TYPE_PLURAL: Record<PostType, string> = {
   essay: "Essays",
-  commonplace: "Commonplace",
+  commonplace: "Notes",
   parish_letter: "Letters to the Parish",
   sermon: "Sermons",
 };
 
+/** The "commonplace" type is shown everywhere as Notes (Nov 26 amendment). */
 export function postPath(p: { type: PostType; slug: string }): string {
   return `/${TYPE_PATH[p.type]}/${p.slug}`;
 }
