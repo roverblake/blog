@@ -21,3 +21,13 @@ export function FleuronRule({ className = "" }: { className?: string }) {
     </div>
   );
 }
+
+/** A centered rule that tapers to nothing at both ends (Nov 25 amendment, option G). */
+export function TaperedRule({ className = "" }: { className?: string }) {
+  return (
+    <div
+      role="separator"
+      className={`mx-auto h-[1.5px] w-full max-w-[560px] bg-[linear-gradient(90deg,transparent,var(--color-ink)_30%,var(--color-ink)_70%,transparent)] ${className}`}
+    />
+  );
+}

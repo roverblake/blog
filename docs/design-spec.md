@@ -130,3 +130,7 @@ At Blake's request: a single line of small-capital links (Essays, Commonplace, L
 ### Nov 25, 2026: commonplace posts, video, audio, wide images
 
 At Blake's request (mockup approved): a Commonplace post leads with its quotation in the pull-quote style (Caslon Text italic, 30px desktop / 24px mobile, between 1px ink rules, source in small capitals), then a small fleur-de-lis between two short rule-grey lines, then the note in 19px body text (17px on phones), with no drop cap and no large title. Videos (YouTube, Vimeo) show a 16:9 still with a quiet round play mark and load the player only when pressed. Audio shows its title in small capitals over a slim player between rule-grey lines. In-text images may be "Text width" or "Wide" (up to 860px). The post page header uses a single rule-grey line instead of the double rule.
+
+### Nov 25, 2026: tapered rule under the masthead
+
+At Blake's request (option G), the fleur-de-lis rule under the masthead is replaced by a centered 1.5px ink rule, at most 560px wide, that fades to nothing at both ends. The small fleur-de-lis remains only as the divider inside Commonplace posts.

@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { TAGLINE } from "@/lib/site";
-import { FleuronRule } from "./fleuron-rule";
+import { TaperedRule } from "./fleuron-rule";
 import { NAV } from "./nav";
 
-/** Homepage masthead: name, italic tagline, and a short fleur-de-lis rule (Nov 25 amendment). */
+/** Homepage masthead: name, italic tagline, and a short tapered rule (Nov 25 amendment). */
 export function Masthead() {
   return (
     <header>
@@ -14,7 +14,7 @@ export function Masthead() {
           </Link>
         </h1>
         <p className="mx-auto mt-3.5 text-[17px] text-subtle italic sm:text-[19px]">{TAGLINE}</p>
-        <FleuronRule className="mt-7" />
+        <TaperedRule className="mt-7" />
         <nav aria-label="Main" className="mt-2 flex flex-wrap justify-center gap-x-6 text-[13px] uppercase tracking-[0.2em] text-slate">
           {NAV.map((n) => (
             <Link key={n.href} href={n.href} className="inline-flex min-h-11 items-center text-slate hover:text-ink">
