@@ -5,7 +5,10 @@ import { TAGLINE } from "@/lib/site";
 export type SiteIdentity = { title: string; tagline: string };
 export const DEFAULT_IDENTITY: SiteIdentity = { title: "Blake Johnson", tagline: TAGLINE };
 
-/** Site name and tagline, as edited in Studio → Settings. Empty fields fall back to the defaults. */
+/**
+ * Site name and tagline, as edited in Studio → Settings. An empty name falls back
+ * to the default; an empty tagline (once saved) means no tagline is shown.
+ */
 export async function getSiteIdentity(): Promise<SiteIdentity> {
   let saved: Partial<SiteIdentity> = {};
   try {
@@ -14,5 +17,6 @@ export async function getSiteIdentity(): Promise<SiteIdentity> {
     // The database isn't reachable while Railway builds the site; use the defaults.
   }
   const pick = (k: keyof SiteIdentity) => (typeof saved[k] === "string" && saved[k]!.trim()) || DEFAULT_IDENTITY[k];
-  return { title: pick("title"), tagline: pick("tagline") };
+  const tagline = typeof saved.tagline === "string" ? saved.tagline.trim() : DEFAULT_IDENTITY.tagline;
+  return { title: pick("title"), tagline };
 }

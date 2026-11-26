@@ -17,7 +17,7 @@ export async function GET() {
 <channel>
 <title>${esc(site.title)}</title>
 <link>${base}</link>
-<description>${esc(site.tagline)}</description>
+<description>${esc(site.tagline || site.title)}</description>
 <language>en-us</language>
 <atom:link href="${base}/rss.xml" rel="self" type="application/rss+xml"/>
 ${items

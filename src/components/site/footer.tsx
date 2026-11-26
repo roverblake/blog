@@ -13,7 +13,7 @@ export async function SiteFooter() {
         <div className="flex flex-wrap items-start justify-between gap-8">
           <div className="flex flex-[1_1_260px] flex-col gap-2">
             <span className="font-display text-[32px] text-ink">{site.title}</span>
-            <span className="text-[17px] text-subtle italic">{site.tagline}</span>
+            {site.tagline && <span className="text-[17px] text-subtle italic">{site.tagline}</span>}
           </div>
           <nav aria-label="Footer" className="grid flex-[2_1_480px] grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-6 text-[17px]">
             {footer.columns.map((c, ci) => (

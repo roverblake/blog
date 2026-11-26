@@ -14,7 +14,7 @@ export async function Masthead() {
             {site.title}
           </Link>
         </h1>
-        <p className="mx-auto mt-3.5 text-[17px] text-subtle italic sm:text-[19px]">{site.tagline}</p>
+        {site.tagline && <p className="mx-auto mt-3.5 text-[17px] text-subtle italic sm:text-[19px]">{site.tagline}</p>}
         <TaperedRule className="mt-7" />
         <nav aria-label="Main" className="mt-2 flex flex-wrap justify-center gap-x-6 text-[13px] uppercase tracking-[0.2em] text-slate">
           {NAV.map((n) => (

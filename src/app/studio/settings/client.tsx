@@ -37,7 +37,7 @@ export function SiteIdentityForm({ initial }: { initial: { title: string; taglin
       <input id="site-title" className="s-input" maxLength={80} value={v.title} onChange={set("title")} />
       <label htmlFor="site-tagline" className="s-label mt-2">Tagline (the line under the name)</label>
       <input id="site-tagline" className="s-input" maxLength={200} value={v.tagline} onChange={set("tagline")} />
-      <p className="m-0 text-[14px] text-slate">Leave a field empty to go back to the original wording.</p>
+      <p className="m-0 text-[14px] text-slate">Leave the tagline empty to show no tagline. An empty site name goes back to “Blake Johnson”.</p>
       <div className="flex items-center gap-3">
         <button type="button" className="s-btn s-btn-primary" disabled={pending} onClick={() => start(async () => { await saveSiteIdentity(v); setSaved(true); })}>
           Save

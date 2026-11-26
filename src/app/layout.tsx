@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: new URL(siteUrl()),
     title: { default: site.title, template: `%s · ${site.title}` },
-    description: site.tagline,
+    description: site.tagline || undefined,
     alternates: { types: { "application/rss+xml": "/rss.xml" } },
     openGraph: { siteName: site.title, type: "website" },
   };
