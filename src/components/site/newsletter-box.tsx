@@ -20,7 +20,7 @@ export async function NewsletterBox() {
         {copy.heading}
       </h2>
       {copy.body && <p className="m-0 max-w-reading text-[17px] leading-normal text-subtle">{copy.body}</p>}
-      <SubscribeForm compact lists={lists} buttonLabel={copy.button} className="mt-1 max-w-reading" />
+      <SubscribeForm compact lists={lists} buttonLabel={copy.button} className="mt-1 w-full" />
     </section>
   );
 }

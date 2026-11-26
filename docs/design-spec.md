@@ -200,3 +200,6 @@ Replaces "one home feed". Below the lead post, "Latest" lists the five newest po
 
 ### Amendment: clipped notes in lists (Nov 26, 2026)
 On the Notes page, a note longer than about 80 words (pictures count as 60, link previews as 25) is cut at the next paragraph with "…", followed by "Read the whole note →" in navy italic. The cut is made on the server. A note's own page always shows it in full.
+
+### Amendment: signup box symmetry (Nov 26, 2026)
+The email field and Subscribe button in the compact signup box now span the full inner width of the warm panel, so the space on the left and right is equal.
