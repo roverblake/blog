@@ -5,7 +5,6 @@ import { Masthead } from "@/components/site/masthead";
 import { NewsletterBox } from "@/components/site/newsletter-box";
 import { PostRows } from "@/components/site/post-rows";
 import { QuoteGrid } from "@/components/site/quotes";
-import { TopStrip } from "@/components/site/top-strip";
 import { getCommonplaceQuotes, getImage, getLeadPost, listPosts, openingOf } from "@/lib/posts";
 
 export const dynamic = "force-dynamic";
@@ -20,7 +19,6 @@ export default async function Home() {
 
   return (
     <>
-      <TopStrip subscribeHref="#subscribe" />
       <Masthead />
       <main className="mx-auto flex max-w-site flex-col gap-12 px-6 pt-9 pb-16">
         <section className="mx-auto flex w-full max-w-lead flex-col gap-11" aria-label="Latest writing">

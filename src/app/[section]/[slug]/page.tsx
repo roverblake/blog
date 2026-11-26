@@ -3,7 +3,6 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { CompactHeader } from "@/components/site/compact-header";
 import { CompactFooter } from "@/components/site/footer";
 import { PostArticle } from "@/components/site/post-article";
-import { TopStrip } from "@/components/site/top-strip";
 import { getImage, getMoreToRead, getPostTags, getPublishedPost, viewablePost } from "@/lib/posts";
 import { postPath, typeFromPath } from "@/lib/urls";
 import { getViewer } from "@/lib/viewer";
@@ -52,7 +51,6 @@ export default async function PostPage({ params }: { params: Params }) {
 
   return (
     <>
-      <TopStrip />
       <CompactHeader />
       <main>
         <PostArticle {...viewablePost(post, viewer.hasAccess)} image={image} tags={tags} more={more} />

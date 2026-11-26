@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { longDate } from "@/lib/dates";
 import { TAGLINE } from "@/lib/site";
-import { NAV } from "./nav";
 
-/** §4 homepage masthead: date line, name, italic tagline, ruled nav. */
+/** §4 homepage masthead: date line, name, italic tagline, no menu bar (Nov 25 amendment). */
 export function Masthead() {
   return (
     <header className="border-b border-ink">
@@ -14,17 +13,7 @@ export function Masthead() {
             Blake Johnson
           </Link>
         </h1>
-        <p className="mx-auto mt-3.5 text-[17px] text-subtle italic sm:text-[19px]">{TAGLINE}</p>
-        <nav
-          aria-label="Main"
-          className="mt-6 flex flex-wrap justify-center gap-x-8 border-t border-b-[3px] border-t-ink border-b-ink py-0.5 text-[14px] uppercase tracking-[0.18em] [border-bottom-style:double] sm:text-[15px]"
-        >
-          {NAV.map((n) => (
-            <Link key={n.href} href={n.href} className="inline-flex min-h-11 items-center">
-              {n.label}
-            </Link>
-          ))}
-        </nav>
+        <p className="mx-auto mt-3.5 pb-8 text-[17px] text-subtle italic sm:text-[19px]">{TAGLINE}</p>
       </div>
     </header>
   );

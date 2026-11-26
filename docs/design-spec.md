@@ -106,3 +106,11 @@ Removed for now (can return later): the three-column row (Essays / Letters / Ser
 - An optional **source line** sits beneath in EB Garamond 16px, slate grey (e.g. "Pascal, *Pensées* 139").
 - Pull quotes are unchanged (centered between thin ink rules, §4).
 - Commonplace notes: the first block quote (or pull quote) and its source are what the homepage shows.
+
+### Nov 25, 2026: black top strip removed
+
+At Blake's request, the black top strip (section line, Sign in, Subscribe) is removed from every public page. Pages now open with the masthead or compact header. Sign-in stays at /sign-in, and the subscriber gate still links to it.
+
+### Nov 25, 2026: menu bar removed, simple blog look
+
+At Blake's request ("simple blog like look for now"), the ruled menu bar under the masthead and the menu on post pages are removed. The header is the date line, the name and the tagline over a single rule. Sections stay reachable from the footer and the "More…" links.

@@ -5,7 +5,6 @@ import { SiteFooter } from "@/components/site/footer";
 import { CompactHeader } from "@/components/site/compact-header";
 import { PostRows } from "@/components/site/post-rows";
 import { QuoteGrid } from "@/components/site/quotes";
-import { TopStrip } from "@/components/site/top-strip";
 import { getCommonplaceQuotes, listPosts } from "@/lib/posts";
 import { TYPE_PLURAL, typeFromPath } from "@/lib/urls";
 
@@ -28,7 +27,6 @@ export default async function SectionIndex({ params }: { params: Params }) {
 
   return (
     <>
-      <TopStrip />
       <CompactHeader />
       <main className="mx-auto flex max-w-lead flex-col gap-12 px-6 pt-12 pb-16">
         {type === "commonplace" && quotes.length > 0 && (
