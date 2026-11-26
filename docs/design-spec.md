@@ -1,26 +1,97 @@
-# Design Spec: Blake Johnson
+# Blake Johnson — Locked Design Spec
 
-> **Status: waiting for Blake's locked spec.**
->
-> Blake: paste your full design spec below the line, replacing this note.
-> Once it is here, this file is the **single source of truth for all public-site
-> styling**: colors, fonts, layout, the drop cap, "Continue reading →", buttons,
-> spacing, and anything else visual.
+Status: **LOCKED** · November 25, 2026 (homepage simplified the same evening)
+Reference mockups: https://claude.ai/artifact/UNimQxvCtdiVm2pFHzuLqP (boards "Magazine-style home" and "Post with header image — magazine style")
 
-## Rules for anyone building the site
-
-1. Every public-facing style (colors, typefaces, sizes, spacing, borders,
-   buttons, link treatments, the drop cap, image ratios) must come from this file.
-2. Do not invent new styles. If something the site needs is not covered here,
-   stop and ask Blake rather than guessing.
-3. Design tokens (colors, fonts, sizes) are copied from this file into the
-   Tailwind config in one place, so the whole site changes together.
-4. The private editor at /studio should preview posts using these same styles,
-   so "Preview" looks exactly like the public page.
-5. Emails (sign-in links, newsletters) follow a simplified version of this
-   spec: serif, black and white, navy button.
+Change anything here only on purpose. Claude Code should treat this file as the source of truth for the public site's look.
 
 ---
 
-<!-- PASTE THE LOCKED DESIGN SPEC BELOW THIS LINE -->
+## 1. Overall direction
 
+- A literary journal in print: mostly black, white and grey, with serif type and thin rules. Keep it simple, and closer to a quiet personal journal than a busy magazine homepage.
+- Quiet and elevated: no ornament, no gradients, no shadows on the public site.
+- **Blue only sparingly**, for Subscribe buttons and the "Continue reading →" link.
+- **No crest or logo.** The name is set in type only.
+
+## 2. Color palette
+
+| Role | Hex | Use |
+|---|---|---|
+| Ink | `#141414` | Headlines, labels, rules, top bar, footer |
+| Body text | `#2A2723` | Article text, drop cap |
+| Slate grey | `#5C5852` | Kickers, dates, bylines, captions |
+| Rule grey | `#DDD8CF` | Hairline dividers between list items |
+| Warm light grey | `#F2F1EE` | Newsletter box, subscriber gate |
+| White | `#FFFFFF` | Page background |
+| Navy (accent) | `#1F3A68` | Subscribe buttons, "Continue reading →", checkbox accents, link hover only |
+
+Rule of thumb: about 60% white, 30% ink and grey, and under 10% navy.
+
+## 3. Typography (Google Fonts)
+
+| Element | Font | Notes |
+|---|---|---|
+| Masthead name, headlines, section display | **Libre Caslon Display** | Weight 400 |
+| List titles, pull quotes | **Libre Caslon Text** | Regular and italic |
+| Body text, UI | **EB Garamond** | 21px desktop / 16–17px mobile, line-height 1.65–1.7 |
+| Drop cap only | **Cormorant Garamond 500** | See §5 |
+
+- Section labels: small all caps, 15px, weight 600, letter-spacing 0.24em, ink color, with a 1px ink rule beneath and an italic grey "More…" link.
+- Kickers (e.g., "Essay · Advent"): 13–14px all caps, letter-spacing ~0.22em, slate grey.
+- Subtitles: EB Garamond italic, 24–26px desktop.
+
+## 4. Site structure
+
+**Homepage**
+1. Black top strip with the tagline line, Sign in, and a navy Subscribe button
+2. Centered masthead: date line, "Blake Johnson" (~88px), italic tagline *"Reading, thinking, and writing in the light of faith"*, and nav between a thin top rule and a double bottom rule: Essays · Commonplace · Letters to the Parish · Sermons · Archive · About
+3. **Lead story in one centered column (max 860px)**: 2:1 image, kicker, headline, italic subtitle, byline, opening paragraph with drop cap, and "Continue reading →". **No sidebar.**
+4. **"The Latest" directly under the lead story**, same column: simple rows of type label (small caps, grey), title (Caslon Text) and date or meta, separated by hairlines
+5. Newsletter box (warm grey) with checkboxes: Essays (every other Monday), Letters to the Parish (Sundays)
+6. "From the Commonplace Book": two quotes with sources
+7. Black footer: name, tagline, link columns (Read / Parish / About), © line, and the ESV credit line
+
+Removed for now (can return later): the three-column row (Essays / Letters / Sermons) and the "This Season" liturgical panel.
+
+**Post page**
+1. Black top strip, then a compact header (name left, nav right) over a double rule
+2. Centered title block: kicker → title (~72px Caslon) → italic subtitle → 48px rule → byline line (BY BLAKE JOHNSON · DATE · X MIN READ)
+3. **Header image**: full content width (max 1180px), aspect ratio **21:9**, with a caption row below (italic caption on the left, small-caps credit on the right, hairline under it)
+4. Body in a 680px column: drop cap opening, section headings in small caps, pull quotes centered between thin ink rules in Libre Caslon Text italic
+5. Subscriber gate: the text fades out, then a warm grey panel with "Subscribe to keep reading" and a navy Subscribe button
+6. Tags ("Filed under"), "More to read" (three items), black footer
+
+## 5. Drop cap (locked)
+
+- First letter: **Cormorant Garamond 500**, color `#2A2723` (not navy), about 3 lines tall (84px at 21px body; 66px at 16px mobile), `line-height: 0.8`, floated left with ~10px right padding.
+- Lead-in: the rest of the first few words in small capitals (uppercase at 0.8em, letter-spacing 0.06em), in the text color.
+- Applied automatically to the first paragraph of every essay. Shrinks proportionally on phones.
+- No boxes, tiles, frames or illuminated ornament.
+
+## 6. "Read more" (locked: Option A)
+
+- An italic text link at the end of the teaser paragraph: **"Continue reading →"** in navy `#1F3A68`.
+- No button, no underline by default; underline on hover.
+
+## 7. Buttons and forms
+
+- Primary (Subscribe): navy fill, white text, small caps 14px with 0.14em letter-spacing, square corners, 52px tall in forms.
+- Secondary: 1px ink outline, transparent fill, same type.
+- Inputs: square corners, 1px ink border, EB Garamond 18px. Every input has a label (visible or screen-reader only).
+- Minimum tap target 44px.
+
+## 8. Images
+
+- Header images: 21:9, real photography (your church, windows, books, landscapes). Always captioned and credited.
+- Homepage lead: 2:1.
+- Sources: your own photos, Unsplash, or Wikimedia Commons, with credit in the caption line.
+
+## 9. Do not
+
+- Add a crest or logo (removed by choice)
+- Put a sidebar beside the lead story
+- Add the three-column section row or the season panel (not for now)
+- Use navy for headings, section labels, panels or backgrounds
+- Use ornamental or boxed drop caps
+- Use gradients, drop shadows or rounded "app-style" cards on the public site
