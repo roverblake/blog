@@ -4,6 +4,9 @@ import { getSiteIdentity } from "@/lib/site-identity";
 import { fontVariables } from "./fonts";
 import "./globals.css";
 
+// Read the site name from the database on every request, never at build time.
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSiteIdentity();
   return {
