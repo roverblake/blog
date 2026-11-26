@@ -20,7 +20,7 @@ export async function SiteFooter() {
               <div key={ci} className="flex flex-col">
                 {c.heading && <span className="mb-1 text-[13px] uppercase tracking-[0.2em] text-footer-label">{c.heading}</span>}
                 {c.links.map(({ label, href }, li) => (
-                  <Link key={li} href={href} className="inline-flex min-h-11 items-center text-footer-text hover:text-ink hover:underline">
+                  <Link key={li} href={href} className="inline-flex min-h-11 items-center text-footer-text hover:text-navy">
                     {label}
                   </Link>
                 ))}
@@ -51,12 +51,12 @@ export async function CompactFooter() {
   return (
     <footer className="border-t border-rule bg-white text-footer-text">
       <div className="mx-auto flex max-w-site flex-wrap items-baseline justify-between gap-3 px-6 py-8">
-        <Link href="/" className="font-display text-[26px] text-ink hover:text-ink">
+        <Link href="/" className="font-display text-[26px] text-ink hover:text-navy">
           {site.title}
         </Link>
         <span className="text-[14px] text-footer-muted">
           © {year()} {site.title} · {footer.credit ? `${footer.credit} · ` : ""}
-          <Link href="/privacy" className="text-footer-muted hover:text-ink hover:underline">
+          <Link href="/privacy" className="text-footer-muted hover:text-navy">
             Privacy
           </Link>{" "}
           · <AccountLinks />

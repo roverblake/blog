@@ -44,7 +44,7 @@ export default async function ArchivePage({ searchParams }: { searchParams: Sear
   const months = group(items);
 
   const tab = (active: boolean) =>
-    `inline-flex min-h-11 items-center border-b text-[13px] uppercase tracking-[0.2em] sm:min-h-0 sm:pb-1 ${active ? "border-ink text-ink" : "border-transparent text-slate hover:text-ink"}`;
+    `inline-flex min-h-11 items-center border-b text-[13px] uppercase tracking-[0.2em] sm:min-h-0 sm:pb-1 ${active ? "border-ink text-ink" : "border-transparent text-slate hover:text-navy"}`;
 
   return (
     <PageShell>
@@ -84,7 +84,7 @@ export default async function ArchivePage({ searchParams }: { searchParams: Sear
                 <span key={t.slug}>
                   <Link
                     href={tag === t.slug ? filterHref(type, undefined, search) : filterHref(type, t.slug, search)}
-                    className={tag === t.slug ? "text-ink underline decoration-1 underline-offset-4" : "text-slate hover:text-ink"}
+                    className={tag === t.slug ? "text-ink underline decoration-1 underline-offset-4" : "text-slate hover:text-navy"}
                     aria-current={tag === t.slug ? "page" : undefined}
                   >
                     {t.name}

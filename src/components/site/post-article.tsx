@@ -79,7 +79,7 @@ export function PostArticle({
               <span className="mr-1 text-[13px] uppercase tracking-[0.16em] text-slate">Filed under</span>
               {tags.map((t, i) => (
                 <span key={t.slug}>
-                  <Link href={`/tags/${t.slug}`} className="text-ink no-underline hover:underline">{t.name}</Link>
+                  <Link href={`/tags/${t.slug}`} className="text-ink no-underline hover:text-navy">{t.name}</Link>
                   {i < tags.length - 1 && <span aria-hidden="true" className="text-slate">&nbsp;·</span>}
                 </span>
               ))}
@@ -145,7 +145,7 @@ export function PostArticle({
               <span className="mr-1 text-[13px] uppercase tracking-[0.16em] text-slate">Filed under</span>
               {tags.map((t, i) => (
                 <span key={t.slug}>
-                  <Link href={`/tags/${t.slug}`} className="text-ink no-underline hover:underline">{t.name}</Link>
+                  <Link href={`/tags/${t.slug}`} className="text-ink no-underline hover:text-navy">{t.name}</Link>
                   {i < tags.length - 1 && <span aria-hidden="true" className="text-slate">&nbsp;·</span>}
                 </span>
               ))}

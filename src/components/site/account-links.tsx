@@ -5,7 +5,7 @@ import { SignOutButton } from "./sign-out-button";
 /** Quiet footer links: Sign in, or Studio / Sign out when signed in. */
 export async function AccountLinks() {
   const viewer = await getViewer();
-  const cls = "text-footer-muted hover:text-ink hover:underline";
+  const cls = "text-footer-muted hover:text-navy";
   if (!viewer.email) {
     return (
       <Link href="/sign-in" className={cls}>

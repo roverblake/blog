@@ -10,7 +10,7 @@ export async function Masthead() {
     <header>
       <div className="mx-auto max-w-site px-6 pt-12 text-center">
         <h1 className="m-0 font-display text-[52px] leading-none font-normal tracking-[0.01em] sm:text-[72px] lg:text-[88px]">
-          <Link href="/" className="hover:text-ink">
+          <Link href="/" className="hover:text-navy">
             {site.title}
           </Link>
         </h1>
@@ -18,7 +18,7 @@ export async function Masthead() {
         <TaperedRule className="mt-7" />
         <nav aria-label="Main" className="mt-2 flex flex-wrap justify-center gap-x-6 text-[13px] uppercase tracking-[0.2em] text-slate">
           {NAV.map((n) => (
-            <Link key={n.href} href={n.href} className="inline-flex min-h-11 items-center text-slate hover:text-ink">
+            <Link key={n.href} href={n.href} className="inline-flex min-h-11 items-center text-slate hover:text-navy">
               {n.short}
             </Link>
           ))}

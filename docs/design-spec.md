@@ -164,3 +164,6 @@ The footer's link columns (up to four, each with a heading and up to ten links) 
 
 ### Amendment: signup box on a warm panel (Nov 26, 2026)
 The compact signup box (home page and end of posts) now sits on the warm panel colour used by the subscriber box (`bg-warm`), with no top or bottom rules, so it reads as its own block instead of another line in the list above. Type and spacing are unchanged.
+
+### Amendment: navy hover everywhere (Nov 26, 2026)
+Every link on the public site (titles in lists, the masthead name and menu, footer links, tags, archive filters, Sign in) now turns navy on hover with a soft 0.15s fade, instead of some links turning black or underlining. Navy remains reserved for hover, Subscribe, "Continue reading" and checkboxes. Planned link previews use black rules (not the warm grey hairline).

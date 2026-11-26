@@ -31,12 +31,12 @@ export async function PostRows({ items, withYear = false, showType = true }: { i
                 {line && <span className="text-[13px] uppercase tracking-[0.18em] text-label">{line}</span>}
                 {p.quote ? (
                   <>
-                    <span className="font-caslon text-[21px] leading-[1.4] whitespace-pre-line italic group-hover:underline group-hover:decoration-1 group-hover:underline-offset-4">“{p.quote.replace(/^[“"]|[”"]$/g, "")}”</span>
+                    <span className="font-caslon text-[21px] leading-[1.4] whitespace-pre-line italic">“{p.quote.replace(/^[“"]|[”"]$/g, "")}”</span>
                     {p.cite && <span className="text-[16px] text-slate">{p.cite}</span>}
                   </>
                 ) : (
                   <>
-                    <span className="font-caslon text-[22px] leading-[1.25] group-hover:underline group-hover:decoration-1 group-hover:underline-offset-4">{p.title}</span>
+                    <span className="font-caslon text-[22px] leading-[1.25]">{p.title}</span>
                     {p.subtitle && <span className="text-[17px] leading-[1.45] text-slate italic">{p.subtitle}</span>}
                   </>
                 )}
