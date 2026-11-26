@@ -13,6 +13,14 @@ export async function saveMailingAddress(address: string) {
   return { ok: true };
 }
 
+export async function saveSiteIdentity(input: unknown) {
+  await requireAdmin();
+  const { title, tagline } = z.object({ title: z.string().max(80), tagline: z.string().max(200) }).parse(input);
+  await setSetting("siteIdentity", { title: title.trim(), tagline: tagline.trim() });
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
 export async function saveAbout(doc: unknown) {
   await requireAdmin();
   const parsed = z.object({ type: z.literal("doc") }).passthrough().parse(doc);

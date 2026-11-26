@@ -1,6 +1,6 @@
 import { listPosts } from "@/lib/posts";
 import { siteUrl } from "@/lib/env";
-import { TAGLINE } from "@/lib/site";
+import { getSiteIdentity } from "@/lib/site-identity";
 import { postPath, TYPE_LABEL } from "@/lib/urls";
 
 export const dynamic = "force-dynamic";
@@ -11,13 +11,13 @@ const esc = (s: string) =>
 /** RSS feed: titles and summaries only (never gated text). */
 export async function GET() {
   const base = siteUrl();
-  const items = await listPosts({ limit: 50 });
+  const [items, site] = await Promise.all([listPosts({ limit: 50 }), getSiteIdentity()]);
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 <channel>
-<title>Blake Johnson</title>
+<title>${esc(site.title)}</title>
 <link>${base}</link>
-<description>${esc(TAGLINE)}</description>
+<description>${esc(site.tagline)}</description>
 <language>en-us</language>
 <atom:link href="${base}/rss.xml" rel="self" type="application/rss+xml"/>
 ${items

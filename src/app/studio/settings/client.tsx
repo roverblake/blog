@@ -4,7 +4,7 @@ import type { JSONContent } from "@tiptap/core";
 import { useState, useTransition } from "react";
 import { removeDictionaryWord } from "@/app/studio/actions";
 import { SimpleEditor } from "@/components/editor/simple-editor";
-import { saveAbout, saveMailingAddress, saveNewsletterBox } from "./actions";
+import { saveAbout, saveMailingAddress, saveNewsletterBox, saveSiteIdentity } from "./actions";
 
 export function MailingAddressForm({ initial }: { initial: string }) {
   const [value, setValue] = useState(initial);
@@ -19,6 +19,28 @@ export function MailingAddressForm({ initial }: { initial: string }) {
       <div className="flex items-center gap-3">
         <button type="button" className="s-btn s-btn-primary" disabled={pending} onClick={() => start(async () => { await saveMailingAddress(value); setSaved(true); })}>
           Save address
+        </button>
+        <span role="status" className="text-[15px] text-slate">{saved ? "Saved" : ""}</span>
+      </div>
+    </div>
+  );
+}
+
+export function SiteIdentityForm({ initial }: { initial: { title: string; tagline: string } }) {
+  const [v, setV] = useState(initial);
+  const [saved, setSaved] = useState(false);
+  const [pending, start] = useTransition();
+  const set = (k: "title" | "tagline") => (e: React.ChangeEvent<HTMLInputElement>) => { setV({ ...v, [k]: e.target.value }); setSaved(false); };
+  return (
+    <div className="flex flex-col gap-2">
+      <label htmlFor="site-title" className="s-label">Site name</label>
+      <input id="site-title" className="s-input" maxLength={80} value={v.title} onChange={set("title")} />
+      <label htmlFor="site-tagline" className="s-label mt-2">Tagline (the line under the name)</label>
+      <input id="site-tagline" className="s-input" maxLength={200} value={v.tagline} onChange={set("tagline")} />
+      <p className="m-0 text-[14px] text-slate">Leave a field empty to go back to the original wording.</p>
+      <div className="flex items-center gap-3">
+        <button type="button" className="s-btn s-btn-primary" disabled={pending} onClick={() => start(async () => { await saveSiteIdentity(v); setSaved(true); })}>
+          Save
         </button>
         <span role="status" className="text-[15px] text-slate">{saved ? "Saved" : ""}</span>
       </div>

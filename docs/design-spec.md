@@ -137,3 +137,6 @@ At Blake's request (option G), the fleur-de-lis rule under the masthead is repla
 
 ### Amendment: Studio dashboard (Nov 26, 2026)
 The private Studio (Posts, Subscribers, Settings) now uses a plain sans-serif dashboard look modeled on Substack: a left sidebar, rounded buttons and panels, sentence-case labels. This spec governs the public site only; the Studio is not reader-facing. The writing surface in the editor keeps the public serif type so drafts look like the finished post.
+
+### Amendment: editable site name and tagline (Nov 26, 2026)
+The site name and the italic tagline are now set in Studio → Settings → Site name. They appear in the masthead, post header, both footers, the browser tab title and the RSS feed. Defaults remain "Blake Johnson" and the §4 tagline; an empty field falls back to the default. Styling is unchanged. Bylines ("by Blake Johnson") and email headers still use the author's name.
