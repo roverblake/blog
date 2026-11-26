@@ -118,3 +118,7 @@ At Blake's request ("simple blog like look for now"), the ruled menu bar under t
 ### Nov 25, 2026: quieter signup box, editable wording, footer sign-in
 
 At Blake's request the home page newsletter box is smaller and quieter: no warm-grey panel, just thin rules above and below, a 24–26px heading, 17px description, the choices on one line, and a slimmer email field. The label, heading, description, button wording and the newsletter choices (name, how often, shown or hidden, ticked by default) are edited in Studio → Settings → Signup box. A small "Sign in" link (or "Studio · Sign out" when signed in) sits in the footer's bottom line.
+
+### Nov 25, 2026: no date line; fleur-de-lis rule under the masthead
+
+At Blake's request the date line above the name is removed. The full-width rule under the masthead is replaced by a centered 1px ink rule, at most 560px wide, with a small fleur-de-lis (18px, ink) at each end.
