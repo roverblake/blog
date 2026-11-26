@@ -4,7 +4,7 @@ import type { JSONContent } from "@tiptap/core";
 import { useState, useTransition } from "react";
 import { removeDictionaryWord } from "@/app/studio/actions";
 import { SimpleEditor } from "@/components/editor/simple-editor";
-import { saveAbout, saveMailingAddress, saveNewsletterBox, saveSiteIdentity } from "./actions";
+import { saveAbout, saveFooter, saveMailingAddress, saveNewsletterBox, saveSiteIdentity } from "./actions";
 
 export function MailingAddressForm({ initial }: { initial: string }) {
   const [value, setValue] = useState(initial);
@@ -43,6 +43,63 @@ export function SiteIdentityForm({ initial }: { initial: { title: string; taglin
           Save
         </button>
         <span role="status" className="text-[15px] text-slate">{saved ? "Saved" : ""}</span>
+      </div>
+    </div>
+  );
+}
+
+type FLink = { label: string; href: string };
+type FCol = { heading: string; links: FLink[] };
+
+export function FooterForm({ initial }: { initial: { columns: FCol[]; credit: string } }) {
+  const [cols, setCols] = useState<FCol[]>(initial.columns);
+  const [credit, setCredit] = useState(initial.credit);
+  const [msg, setMsg] = useState("");
+  const [pending, start] = useTransition();
+  const update = (fn: (c: FCol[]) => FCol[]) => { setCols(fn); setMsg(""); };
+  const setCol = (i: number, patch: Partial<FCol>) => update((c) => c.map((x, j) => (j === i ? { ...x, ...patch } : x)));
+  const setLink = (i: number, k: number, patch: Partial<FLink>) =>
+    setCol(i, { links: cols[i].links.map((l, m) => (m === k ? { ...l, ...patch } : l)) });
+  return (
+    <div className="flex flex-col gap-4">
+      <p className="m-0 text-[14px] text-slate">
+        Up to four columns of links. For a page on this site, type its address like <code>/about</code>; for another site, paste the full address.
+      </p>
+      <div className="flex flex-col gap-3">
+        {cols.map((c, i) => (
+          <div key={i} className="flex flex-col gap-2 rounded-[10px] border border-[var(--ui-border)] bg-white p-3">
+            <div className="flex items-end gap-2">
+              <div className="flex flex-1 flex-col gap-1">
+                <label htmlFor={`fc-${i}`} className="s-label">Column heading</label>
+                <input id={`fc-${i}`} className="s-input" value={c.heading} onChange={(e) => setCol(i, { heading: e.target.value })} />
+              </div>
+              <button type="button" className="s-btn" onClick={() => update((all) => all.filter((_, j) => j !== i))}>Remove column</button>
+            </div>
+            {c.links.map((l, k) => (
+              <div key={k} className="flex items-center gap-2">
+                <input aria-label="Link text" placeholder="Link text" className="s-input flex-1" value={l.label} onChange={(e) => setLink(i, k, { label: e.target.value })} />
+                <input aria-label="Address" placeholder="/page or https://…" className="s-input flex-1" value={l.href} onChange={(e) => setLink(i, k, { href: e.target.value })} />
+                <button type="button" aria-label={`Remove ${l.label || "link"}`} className="min-h-8 min-w-8 text-[18px] text-slate" onClick={() => setCol(i, { links: c.links.filter((_, m) => m !== k) })}>×</button>
+              </div>
+            ))}
+            {c.links.length < 10 && (
+              <button type="button" className="self-start text-[14px] text-slate underline" onClick={() => setCol(i, { links: [...c.links, { label: "", href: "" }] })}>+ Add link</button>
+            )}
+          </div>
+        ))}
+      </div>
+      {cols.length < 4 && (
+        <button type="button" className="s-btn self-start" onClick={() => update((c) => [...c, { heading: "", links: [{ label: "", href: "" }] }])}>Add column</button>
+      )}
+      <div className="flex flex-col gap-1">
+        <label htmlFor="f-credit" className="s-label">Credit line at the bottom (leave empty to hide)</label>
+        <input id="f-credit" className="s-input" maxLength={200} value={credit} onChange={(e) => { setCredit(e.target.value); setMsg(""); }} />
+      </div>
+      <div className="flex items-center gap-3">
+        <button type="button" className="s-btn s-btn-primary" disabled={pending} onClick={() => start(async () => { await saveFooter({ columns: cols, credit }); setMsg("Saved"); })}>
+          Save footer
+        </button>
+        <span role="status" className="text-[15px] text-slate">{msg}</span>
       </div>
     </div>
   );

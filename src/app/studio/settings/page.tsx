@@ -2,18 +2,20 @@ import { db, schema } from "@/db";
 import { getAboutDoc, getSetting } from "@/lib/settings";
 import { getListOptions, getNewsletterCopy } from "@/lib/newsletter-copy";
 import { getSiteIdentity } from "@/lib/site-identity";
-import { AboutEditor, DictionaryList, MailingAddressForm, NewsletterBoxForm, SiteIdentityForm } from "./client";
+import { getFooterContent } from "@/lib/footer-content";
+import { AboutEditor, DictionaryList, FooterForm, MailingAddressForm, NewsletterBoxForm, SiteIdentityForm } from "./client";
 
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
-  const [address, about, words, copy, options, site] = await Promise.all([
+  const [address, about, words, copy, options, site, footer] = await Promise.all([
     getSetting<string>("mailingAddress", ""),
     getAboutDoc(),
     db.select({ word: schema.dictionaryWords.word }).from(schema.dictionaryWords).orderBy(schema.dictionaryWords.word),
     getNewsletterCopy(),
     getListOptions(),
     getSiteIdentity(),
+    getFooterContent(),
   ]);
   return (
     <main className="mx-auto flex max-w-[900px] flex-col gap-6 px-6 py-8">
@@ -32,6 +34,11 @@ export default async function SettingsPage() {
       <section className="s-panel flex flex-col gap-3" aria-labelledby="nl-h">
         <h2 id="nl-h" className="s-panel-title m-0">Signup box</h2>
         <NewsletterBoxForm initialCopy={copy} initialOptions={options} />
+      </section>
+
+      <section className="s-panel flex flex-col gap-3" aria-labelledby="footer-h">
+        <h2 id="footer-h" className="s-panel-title m-0">Footer</h2>
+        <FooterForm initial={footer} />
       </section>
 
       <section className="flex flex-col gap-3" aria-labelledby="about-h">

@@ -21,6 +21,43 @@ export async function saveSiteIdentity(input: unknown) {
   return { ok: true };
 }
 
+const footerInput = z.object({
+  columns: z
+    .array(
+      z.object({
+        heading: z.string().max(40),
+        links: z.array(z.object({ label: z.string().max(60), href: z.string().max(300) })).max(10),
+      }),
+    )
+    .max(4),
+  credit: z.string().max(200),
+});
+
+/** Footer links may point to a page on the site, a web address, or an email address. */
+function normalizeHref(h: string) {
+  if (/^(\/|https?:\/\/|mailto:)/i.test(h)) return h;
+  if (h.includes("@") && !h.includes("/")) return `mailto:${h}`;
+  if (h.includes(".")) return `https://${h}`;
+  return `/${h.replace(/^\/+/, "")}`;
+}
+
+export async function saveFooter(input: unknown) {
+  await requireAdmin();
+  const f = footerInput.parse(input);
+  const columns = f.columns
+    .map((c) => ({
+      heading: c.heading.trim(),
+      links: c.links
+        .map((l) => ({ label: l.label.trim(), href: l.href.trim() }))
+        .filter((l) => l.label && l.href)
+        .map((l) => ({ ...l, href: normalizeHref(l.href) })),
+    }))
+    .filter((c) => c.heading || c.links.length);
+  await setSetting("footer", { columns, credit: f.credit.trim() });
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
 export async function saveAbout(doc: unknown) {
   await requireAdmin();
   const parsed = z.object({ type: z.literal("doc") }).passthrough().parse(doc);
