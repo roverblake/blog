@@ -15,6 +15,15 @@
     "db:seed:demo": "tsx src/db/seed-demo.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1178.0",
+    "@tiptap/core": "3.35.0",
+    "@tiptap/extension-blockquote": "3.35.0",
+    "@tiptap/extension-placeholder": "^3.35.0",
+    "@tiptap/extensions": "^3.35.0",
+    "@tiptap/pm": "^3.35.0",
+    "@tiptap/react": "^3.35.0",
+    "@tiptap/starter-kit": "^3.35.0",
+    "@tiptap/suggestion": "^3.35.0",
     "better-auth": "^1.7.28",
     "drizzle-orm": "^0.45.4",
     "next": "15.5.29",

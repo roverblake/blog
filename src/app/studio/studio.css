@@ -1,0 +1,76 @@
+/* Private Studio UI (not governed by the public design spec, but uses its palette). */
+@layer components {
+.studio .s-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--color-ink);
+  background: transparent;
+  font-family: var(--font-serif);
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: var(--color-ink);
+  white-space: nowrap;
+}
+.studio .s-btn:disabled { opacity: 0.5; cursor: default; }
+.studio .s-btn-primary { background: var(--color-navy); border-color: var(--color-navy); color: #fff; }
+.studio .s-btn-primary:hover { color: #fff; }
+.studio .s-btn-danger { border-color: #8a2a22; color: #8a2a22; }
+.studio .s-input, .studio .s-select, .studio .s-textarea {
+  width: 100%;
+  border: 1px solid #cfc9be;
+  background: #fff;
+  padding: 0 10px;
+  font-family: var(--font-serif);
+  font-size: 16px;
+  min-height: 40px;
+  border-radius: 0;
+}
+.studio .s-textarea { padding: 8px 10px; min-height: 80px; resize: vertical; }
+.studio .s-label { font-size: 14px; color: var(--color-slate); display: block; margin-bottom: 4px; }
+.studio .s-panel { background: #fff; border: 1px solid var(--color-rule); padding: 18px; }
+.studio .s-panel-title { font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--color-slate); margin-bottom: 12px; }
+.studio .s-badge { display: inline-block; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; padding: 2px 8px; border: 1px solid currentColor; }
+.studio .s-badge-draft { color: var(--color-slate); }
+.studio .s-badge-scheduled { color: #8a5a00; }
+.studio .s-badge-published { color: #24603a; }
+
+/* Editor surface: matches the public post body */
+.studio .ProseMirror { outline: none; min-height: 300px; }
+.studio .ProseMirror p.is-empty:first-child::before,
+.studio .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: #9a948a;
+  font-style: italic;
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+.studio .ProseMirror .paywall-line {
+  display: flex; align-items: center; gap: 12px; color: var(--color-navy); margin: 8px 0; user-select: none;
+}
+.studio .ProseMirror .paywall-line::before,
+.studio .ProseMirror .paywall-line::after { content: ""; flex: 1; border-top: 2px dashed #9fb0cc; }
+.studio .ProseMirror .paywall-line span { font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; white-space: nowrap; }
+.studio .ProseMirror .ProseMirror-selectednode { outline: 2px solid var(--color-navy); outline-offset: 2px; }
+.studio .ProseMirror .footnote-ref {
+  font-size: 0.7em; vertical-align: super; color: var(--color-navy); cursor: pointer; padding: 0 2px;
+}
+.studio .ProseMirror figure img { max-width: 100%; display: block; }
+.studio .ProseMirror figure .caption-row input { border: 0; background: transparent; font: inherit; color: inherit; width: 100%; }
+.studio .ProseMirror .pull-quote cite { display: block; }
+.studio .ProseMirror .pull-quote .cite-input {
+  display: block; width: 100%; margin-top: 10px; border: 0; text-align: center; background: transparent;
+  font-family: var(--font-serif); font-style: normal; font-size: 14px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-slate);
+}
+.studio .grammar-mark { text-decoration: underline wavy #c0392b; text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+.studio .grammar-mark-active { background: #fbe3df; }
+.studio .ProseMirror { counter-reset: footnote; }
+.studio .ProseMirror .footnote-ref { counter-increment: footnote; }
+.studio .ProseMirror .footnote-ref::before { content: counter(footnote); }
+}
