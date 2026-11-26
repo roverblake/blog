@@ -65,3 +65,32 @@ export async function getObject(key: string): Promise<{ body: Buffer; contentTyp
     return null;
   }
 }
+
+/**
+ * Whether uploads will survive a redeploy. On Railway, files are only kept in
+ * a bucket or on a volume; the app's own disk is wiped on every update.
+ * Returns a plain-language warning for the Studio, or null when all is well.
+ */
+export async function storageWarning(): Promise<string | null> {
+  if (bucket) return null;
+  const onRailway = !!process.env.RAILWAY_ENVIRONMENT_NAME || !!process.env.RAILWAY_PROJECT_ID;
+  if (!onRailway) return null;
+  if (!process.env.MEDIA_DIR) {
+    return "Images and audio are not saved permanently yet: they are erased whenever the site updates. Add a Railway volume and set MEDIA_DIR (see docs/launch-checklist.md).";
+  }
+  try {
+    const { stat, unlink } = await import("node:fs/promises");
+    await mkdir(localDir, { recursive: true });
+    const probe = path.join(localDir, ".write-test");
+    await writeFile(probe, "ok");
+    await unlink(probe);
+    // A volume is a separate disk; if MEDIA_DIR sits on the app's own disk, it isn't one.
+    const [dir, root] = await Promise.all([stat(localDir), stat("/")]);
+    if (dir.dev === root.dev) {
+      return `MEDIA_DIR is set to ${localDir}, but no Railway volume is attached there, so uploads are still erased on each update. Attach a volume with mount path ${path.dirname(localDir) === "/" ? localDir : path.dirname(localDir)}.`;
+    }
+    return null;
+  } catch {
+    return `Uploads can't be saved to ${localDir}. Check the volume's mount path in Railway.`;
+  }
+}

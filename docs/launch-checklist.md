@@ -5,6 +5,7 @@ Work down the list. Every item has a plain test. The README has step-by-step hel
 ## Accounts and settings
 
 - [ ] Railway: project created on the **Hobby** plan, with website, Postgres, and a bucket (or volume)
+- [ ] Image storage: a volume is attached to the website service at mount path `/data`, and the variable `MEDIA_DIR` is `/data/media`. Test: the red storage notice at the top of Studio is gone, and an image you upload is still there after the next redeploy
 - [ ] All variables entered in the website service (README §1d and §7). Double-check `ADMIN_EMAIL` is your address
 - [ ] `BETTER_AUTH_SECRET` and `CRON_SECRET` are long random passwords, saved in your password manager
 - [ ] Resend: domain shows **Verified**; `RESEND_API_KEY` and `EMAIL_FROM` set (README §2)
