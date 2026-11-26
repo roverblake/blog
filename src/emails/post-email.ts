@@ -1,3 +1,4 @@
+import { stripSiteName } from "@/lib/link-meta";
 import { citeParts } from "@/lib/content/cite";
 import { isValidVideo, videoThumbUrl, videoWatchUrl } from "@/lib/embeds";
 import { escapeHtml as e } from "@/lib/email";
@@ -80,7 +81,8 @@ function block(b: BlockNode, notes: string[], base: string): string {
       return `<div style="margin:8px 0 22px;"><a href="${link}">${img}</a><div style="padding-top:6px;font-size:14px;font-style:italic;color:${S.slate};">${caption ? e(caption) + " · " : ""}<a href="${link}" style="color:${S.slate};">Watch on ${provider === "youtube" ? "YouTube" : "Vimeo"}</a></div></div>`;
     }
     case "linkCard": {
-      const { href, title, site, author } = b.attrs ?? ({} as { href?: string; title?: string | null; site?: string | null; author?: string | null });
+      const { href, title: rawTitle, site, author } = b.attrs ?? ({} as { href?: string; title?: string | null; site?: string | null; author?: string | null });
+      const title = rawTitle ? stripSiteName(rawTitle, site ?? "") : rawTitle;
       const h = safeHref(href);
       if (!h) return "";
       const url = abs(h, base);

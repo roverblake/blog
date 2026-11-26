@@ -27,9 +27,22 @@ export function parseLinkMeta(html: string, url: string): { title: string; site:
   }
   const authorRaw = metas["author"] || metas["article:author"] || metas["parsely-author"] || metas["sailthru.author"] || metas["twitter:creator"] || "";
   const author = /^https?:\/\//.test(authorRaw) || authorRaw.startsWith("@") ? "" : authorRaw;
+  const site = (metas["og:site_name"] || metas["application-name"] || host).slice(0, 120);
+  const rawTitle = metas["og:title"] || metas["twitter:title"] || (titleTag ? decode(titleTag) : "") || host;
   return {
-    title: (metas["og:title"] || metas["twitter:title"] || (titleTag ? decode(titleTag) : "") || host).slice(0, 300),
-    site: (metas["og:site_name"] || metas["application-name"] || host).slice(0, 120),
+    title: stripSiteName(rawTitle, site).slice(0, 300),
+    site,
     author: author.slice(0, 120),
   };
+}
+
+/** "The Theology of Thanksgiving - First Things" → "The Theology of Thanksgiving". */
+export function stripSiteName(title: string, site: string): string {
+  const t = title.trim();
+  if (!site) return t;
+  const esc = site.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(`\\s+[-–—|·:]\\s+${esc}\\s*$`, "i");
+  const pre = new RegExp(`^${esc}\\s+[-–—|·:]\\s+`, "i");
+  const out = t.replace(re, "").replace(pre, "").trim();
+  return out || t;
 }

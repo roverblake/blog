@@ -122,3 +122,9 @@
 .studio .ProseMirror .cite-field { display: block; width: 100%; min-height: 1.4em; outline: none; cursor: text; white-space: pre-wrap; }
 .studio .ProseMirror .cite-field:empty::before { content: attr(data-placeholder); color: #b9b4ab; pointer-events: none; }
 .studio .ProseMirror .cite-field i, .studio .ProseMirror .cite-field em { font-style: italic; }
+/* Hover tools on quotes and link previews */
+.studio .ProseMirror .has-tools { position: relative; }
+.studio .ProseMirror .has-tools:hover > .block-tools,
+.studio .ProseMirror .has-tools.ProseMirror-selectednode > .block-tools,
+.studio .ProseMirror .has-tools:focus-within > .block-tools { display: flex; }
+.studio .ProseMirror .block-tools { top: -14px; right: 0; text-transform: none; letter-spacing: 0; font-style: normal; text-align: left; }

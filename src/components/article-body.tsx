@@ -3,6 +3,7 @@
  * Pass a document that has already been through gateDoc().
  */
 import { CiteText } from "@/components/cite-text";
+import { stripSiteName } from "@/lib/link-meta";
 import { Fragment, type ReactNode } from "react";
 import type { BlockNode, Doc, InlineNode, Mark, Paragraph, TextNode } from "@/lib/content/types";
 import { safeHref } from "@/lib/urls";
@@ -184,7 +185,8 @@ function renderBlock(b: BlockNode, i: number, ctx: Ctx): ReactNode {
       );
     }
     case "linkCard": {
-      const { href: raw, title, site, author } = b.attrs ?? { href: "" };
+      const { href: raw, title: rawTitle, site, author } = b.attrs ?? { href: "" };
+      const title = rawTitle ? stripSiteName(rawTitle, site ?? "") : rawTitle;
       const href = safeHref(raw);
       if (!href) return null;
       const internal = href.startsWith("/");

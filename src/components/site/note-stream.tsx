@@ -14,14 +14,14 @@ type NoteItem = {
  * Notes shown as a quiet stream: the day and date (linking to the note's own
  * page), then the note itself. Each doc has already been gated on the server.
  */
-export function NoteStream({ notes }: { notes: NoteItem[] }) {
+export function NoteStream({ notes, labelled = false }: { notes: NoteItem[]; labelled?: boolean }) {
   if (!notes.length) return <p className="py-6 text-[18px] text-slate italic">No notes yet.</p>;
   return (
     <div>
       {notes.map(({ post, doc, truncated }) => (
         <article key={post.id} className="border-b border-rule py-8 last:border-b-0">
           <Link href={postPath(post)} className="text-[13px] uppercase tracking-[0.18em] text-label hover:text-navy">
-            {post.publishedAt ? noteDate(post.publishedAt) : "Note"}
+            {labelled ? "Note · " : ""}{post.publishedAt ? noteDate(post.publishedAt) : labelled ? "" : "Note"}
           </Link>
           {(doc.content?.length ?? 0) > 0 && (
             <div className="article-body note-body mt-4">

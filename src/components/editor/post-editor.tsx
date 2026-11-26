@@ -10,7 +10,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { saveDraft, uploadImage } from "@/app/studio/actions";
 import { countWords, readingMinutes } from "@/lib/content/text";
-import { Audio, BlockQuoteWithSource, FigureImage, Footnote, LinkCard, PullQuote, Paywall, Video } from "./extensions";
+import { TrailingNode } from "@tiptap/extensions";
+import { Audio, BlockQuoteWithSource, ClickBetweenBlocks, FigureImage, Footnote, LinkCard, PullQuote, Paywall, Video } from "./extensions";
 import { getLinkPreview, getNoteBlocks, listInsertable, type PickItem } from "@/app/studio/link-actions";
 import { parseVideoUrl } from "@/lib/embeds";
 import { PostActions } from "./post-actions";
@@ -177,6 +178,8 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
       Video,
       Audio,
       LinkCard,
+      ClickBetweenBlocks,
+      TrailingNode,
       createSlash(slashItems(onError), bridge),
     ],
     [onError],

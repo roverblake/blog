@@ -188,3 +188,9 @@ Lines are kept only where they separate sections. Removed: the rule under the co
 
 ### Amendment: italic book titles in quote sources (Nov 26, 2026)
 In a quote's source line, select a book title and press ⌘I (Ctrl+I on Windows) to italicize it, e.g. "C.S. Lewis, *The Screwtape Letters*". The rest of the source line stays roman. Works in block quotes and pull quotes, on the site and in emails.
+
+### Amendment: one home feed (Nov 26, 2026)
+Below the lead post, the home page has a single "Latest" feed: the eight newest posts and notes together, newest first. Posts use the usual row; notes appear in full with a "Note · Friday · Nov 20" line. Under the feed: "All posts · All notes" in italic. This replaces the separate Posts and Notes sections.
+
+### Amendment: editing around blocks (Nov 26, 2026)
+In the editor: click the space between two blocks that aren't text (a quote and a link preview, two images) to start a new line there; Enter on an empty line, or the down arrow on the last line, leaves a quote; quotes, link previews and images show hover tools ("Plain text" for quotes, "Delete"). Link-preview titles drop a trailing publication name ("… - First Things").

@@ -1,9 +1,10 @@
 "use client";
 
 import { citeParts } from "@/lib/content/cite";
-import { mergeAttributes, Node } from "@tiptap/core";
+import { Extension, mergeAttributes, Node } from "@tiptap/core";
 import Blockquote from "@tiptap/extension-blockquote";
-import { TextSelection } from "@tiptap/pm/state";
+import { NodeSelection, Plugin, TextSelection } from "@tiptap/pm/state";
+import type { EditorView } from "@tiptap/pm/view";
 import { NodeViewContent, NodeViewWrapper, ReactNodeViewRenderer, type ReactNodeViewProps } from "@tiptap/react";
 import { useEffect, useRef, useState } from "react";
 import { videoThumbUrl } from "@/lib/embeds";
@@ -152,9 +153,32 @@ function CiteField({ value, onChange, placeholder }: { value: string; onChange: 
   );
 }
 
-function PullQuoteView({ node, updateAttributes }: ReactNodeViewProps) {
+/** Hover tools on a block: remove it, or (for quotes) turn it back into plain paragraphs. */
+function BlockTools({ onDelete, onUnwrap }: { onDelete: () => void; onUnwrap?: () => void }) {
   return (
-    <NodeViewWrapper as="blockquote" className="pull-quote">
+    <span className="media-tools block-tools" contentEditable={false}>
+      {onUnwrap && <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={onUnwrap}>Plain text</button>}
+      <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={onDelete}>Delete</button>
+    </span>
+  );
+}
+
+/** Replaces a quote with the paragraphs inside it. */
+function unwrapNode(props: ReactNodeViewProps) {
+  const pos = props.getPos();
+  if (typeof pos !== "number") return;
+  const { node, editor } = props;
+  editor.chain().focus().command(({ tr }) => {
+    tr.replaceWith(pos, pos + node.nodeSize, node.content);
+    return true;
+  }).run();
+}
+
+function PullQuoteView(props: ReactNodeViewProps) {
+  const { node, updateAttributes, deleteNode } = props;
+  return (
+    <NodeViewWrapper as="blockquote" className="pull-quote has-tools">
+      <BlockTools onDelete={deleteNode} onUnwrap={() => unwrapNode(props)} />
       <NodeViewContent />
       <CiteField
         value={(node.attrs.cite as string) ?? ""}
@@ -187,7 +211,7 @@ export const PullQuote = Node.create({
   },
 });
 
-function ImageView({ node, updateAttributes, selected }: ReactNodeViewProps) {
+function ImageView({ node, updateAttributes, selected, deleteNode }: ReactNodeViewProps) {
   const a = node.attrs as { src: string; alt: string | null; caption: string | null; credit: string | null; size: string | null };
   const wide = a.size === "wide";
   return (
@@ -195,6 +219,7 @@ function ImageView({ node, updateAttributes, selected }: ReactNodeViewProps) {
       <span className="media-tools" contentEditable={false}>
         <button type="button" aria-pressed={!wide} onClick={() => updateAttributes({ size: "normal" })}>Text width</button>
         <button type="button" aria-pressed={wide} onClick={() => updateAttributes({ size: "wide" })}>Wide</button>
+        <button type="button" onClick={deleteNode}>Delete</button>
       </span>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={a.src} alt={a.alt ?? ""} />
@@ -324,12 +349,13 @@ export const Audio = Node.create({
   },
 });
 
-function LinkCardView({ node, updateAttributes, selected }: ReactNodeViewProps) {
+function LinkCardView({ node, updateAttributes, selected, deleteNode }: ReactNodeViewProps) {
   const a = node.attrs as { href: string; title: string | null; site: string | null; author: string | null };
   let host = "";
   try { host = a.href.startsWith("/") ? "" : new URL(a.href).hostname.replace(/^www\./, ""); } catch { /* ignore */ }
   return (
-    <NodeViewWrapper data-drag-handle className={`link-ref link-ref-edit ${selected ? "ProseMirror-selectednode" : ""}`}>
+    <NodeViewWrapper data-drag-handle className={`link-ref link-ref-edit has-tools ${selected ? "ProseMirror-selectednode" : ""}`}>
+      <BlockTools onDelete={deleteNode} />
       <input className="link-ref-site w-full border-0 bg-transparent outline-none" placeholder="PUBLICATION" aria-label="Publication" value={a.site ?? ""} onChange={(e) => updateAttributes({ site: e.target.value })} />
       <input className="link-ref-title w-full border-0 bg-transparent outline-none" placeholder="Title" aria-label="Title" value={a.title ?? ""} onChange={(e) => updateAttributes({ title: e.target.value })} />
       <div className="link-ref-meta flex items-baseline gap-1" contentEditable={false}>
@@ -441,9 +467,11 @@ export const Footnote = Node.create({
   },
 });
 
-function BlockQuoteView({ node, updateAttributes }: ReactNodeViewProps) {
+function BlockQuoteView(props: ReactNodeViewProps) {
+  const { node, updateAttributes, deleteNode } = props;
   return (
-    <NodeViewWrapper as="figure" className="block-quote">
+    <NodeViewWrapper as="figure" className="block-quote has-tools">
+      <BlockTools onDelete={deleteNode} onUnwrap={() => unwrapNode(props)} />
       <blockquote>
         <NodeViewContent />
       </blockquote>
@@ -461,5 +489,108 @@ export const BlockQuoteWithSource = Blockquote.extend({
   addAttributes: () => ({ cite: { default: null } }),
   addNodeView() {
     return ReactNodeViewRenderer(BlockQuoteView, quoteInputs);
+  },
+});
+
+/* ---------- Click to write between blocks ---------- */
+
+/** Inserts an empty paragraph at a top-level position and puts the cursor in it. */
+function openLineAt(view: EditorView, pos: number) {
+  const { state } = view;
+  const tr = state.tr.insert(pos, state.schema.nodes.paragraph.create());
+  tr.setSelection(TextSelection.create(tr.doc, pos + 1));
+  view.dispatch(tr.scrollIntoView());
+  view.focus();
+}
+
+/**
+ * Lets the writer click into the space between two blocks that aren't text
+ * (a quote and a link preview, two images…), or below the last one, and start
+ * typing there. Enter on a selected block opens a line after it.
+ */
+export const ClickBetweenBlocks = Extension.create({
+  name: "clickBetweenBlocks",
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        props: {
+          handleKeyDown(view, event) {
+            const sel = view.state.selection;
+            if (event.key === "Enter" && !event.shiftKey && sel instanceof NodeSelection && sel.$from.depth === 0) {
+              event.preventDefault();
+              openLineAt(view, sel.to);
+              return true;
+            }
+            // Arrow keys out of a quote (or past a selected block) into open space.
+            if ((event.key === "ArrowDown" || event.key === "ArrowUp") && !event.shiftKey) {
+              const down = event.key === "ArrowDown";
+              const $pos = down ? sel.$to : sel.$from;
+              if ($pos.depth === 0 && !(sel instanceof NodeSelection)) return false;
+              const top = $pos.depth === 0 ? (sel as NodeSelection).node : $pos.node(1);
+              const topStart = $pos.depth === 0 ? sel.from : $pos.before(1);
+              if (top.isTextblock) return false;
+              if ($pos.depth > 0) {
+                // Only from the very last (or first) line of the block.
+                let atEdge = true;
+                for (let d = 1; d < $pos.depth; d++) {
+                  if (down ? $pos.index(d) !== $pos.node(d).childCount - 1 : $pos.index(d) !== 0) atEdge = false;
+                }
+                if (!atEdge || !view.endOfTextblock(down ? "down" : "up")) return false;
+              }
+              const doc = view.state.doc;
+              const idx = doc.resolve(topStart).index(0);
+              const neighbour = down ? (idx + 1 < doc.childCount ? doc.child(idx + 1) : null) : idx > 0 ? doc.child(idx - 1) : null;
+              if (neighbour?.isTextblock) return false;
+              event.preventDefault();
+              openLineAt(view, down ? topStart + top.nodeSize : topStart);
+              return true;
+            }
+            return false;
+          },
+          handleDOMEvents: {
+            mousedown(view, event) {
+              if (event.button !== 0) return false;
+              const target = event.target as HTMLElement | null;
+              if (target?.closest("input, textarea, button, [data-cite-field], a, img, iframe, audio")) return false;
+              const doc = view.state.doc;
+              const y = event.clientY;
+              // Top-level blocks with their positions and on-screen boxes.
+              const blocks: { node: typeof doc.firstChild; start: number; end: number; top: number; bottom: number }[] = [];
+              doc.forEach((node, offset) => {
+                const dom = view.nodeDOM(offset) as HTMLElement | null;
+                if (!dom?.getBoundingClientRect) return;
+                const r = dom.getBoundingClientRect();
+                blocks.push({ node, start: offset, end: offset + node.nodeSize, top: r.top, bottom: r.bottom });
+              });
+              const isText = (n: typeof doc.firstChild) => !!n?.isTextblock;
+              for (let i = 0; i <= blocks.length; i++) {
+                const a = blocks[i - 1];
+                const b = blocks[i];
+                if (a && isText(a.node) && (!b || isText(b.node))) continue;
+                if (b && isText(b.node) && a && isText(a.node)) continue;
+                if (!a || !b) {
+                  // Only below the last block, and only if it isn't text.
+                  if (a && !b && !isText(a.node) && y > a.bottom - 4 && y < a.bottom + 80) {
+                    event.preventDefault();
+                    openLineAt(view, a.end);
+                    return true;
+                  }
+                  continue;
+                }
+                if (isText(a.node) || isText(b.node)) continue;
+                const mid = (a.bottom + b.top) / 2;
+                const reach = Math.max(14, (b.top - a.bottom) / 2);
+                if (Math.abs(y - mid) <= reach) {
+                  event.preventDefault();
+                  openLineAt(view, a.end);
+                  return true;
+                }
+              }
+              return false;
+            },
+          },
+        },
+      }),
+    ];
   },
 });
