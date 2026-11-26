@@ -5,7 +5,7 @@ import { magicLink } from "better-auth/plugins/magic-link";
 import { and, eq } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { sendEmail } from "@/lib/email";
-import { isAdminEmail, siteUrl } from "@/lib/env";
+import { authUrl, isAdminEmail } from "@/lib/env";
 import { signInEmail } from "@/emails/sign-in";
 import { linkCapture } from "@/lib/test-signin";
 
@@ -30,7 +30,7 @@ async function maySignIn(email: string): Promise<boolean> {
 }
 
 export const auth = betterAuth({
-  baseURL: process.env.BETTER_AUTH_URL ?? siteUrl(),
+  baseURL: authUrl(),
   secret: process.env.BETTER_AUTH_SECRET,
   database: drizzleAdapter(db, {
     provider: "pg",
