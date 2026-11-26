@@ -7,6 +7,7 @@ import { db, schema } from "@/db";
 import { sendEmail } from "@/lib/email";
 import { isAdminEmail, siteUrl } from "@/lib/env";
 import { signInEmail } from "@/emails/sign-in";
+import { linkCapture } from "@/lib/test-signin";
 
 /**
  * Only the admin (ADMIN_EMAIL) and confirmed subscribers may get a sign-in
@@ -75,6 +76,12 @@ export const auth = betterAuth({
       expiresIn: 60 * 15,
       sendMagicLink: async ({ email, url }) => {
         if (!(await maySignIn(email))) return;
+        // Test sign-in: hand the link back instead of emailing it.
+        const capture = linkCapture.getStore();
+        if (capture) {
+          capture.url = url;
+          return;
+        }
         const msg = signInEmail(url);
         await sendEmail({ to: email, ...msg });
       },

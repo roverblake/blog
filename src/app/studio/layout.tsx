@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/session";
+import { testPasswordEnabled } from "@/lib/test-signin";
 import "./studio.css";
 
 export const metadata = { title: "Studio", robots: { index: false, follow: false } };
@@ -14,6 +15,11 @@ export default async function StudioLayout({ children }: { children: React.React
   await requireAdmin();
   return (
     <div className="studio min-h-screen bg-[#f7f6f3] text-ink">
+      {testPasswordEnabled() && (
+        <div role="note" className="bg-[#fff4d6] px-6 py-2 text-[14px]">
+          Test sign-in is on. Before launch, delete <code>TEST_ADMIN_PASSWORD</code> from Railway&apos;s Variables.
+        </div>
+      )}
       <header className="border-b border-rule bg-white">
         <div className="flex flex-wrap items-center justify-between gap-3 px-6">
           <div className="flex items-center gap-6">

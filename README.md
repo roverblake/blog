@@ -244,6 +244,7 @@ go in `.env.local`; on Railway they go in the website service's **Variables** ta
 | `S3_BUCKET` | Image bucket name | Railway bucket, Credentials tab |
 | `S3_ACCESS_KEY_ID` | Image bucket username | Railway bucket, Credentials tab |
 | `S3_SECRET_ACCESS_KEY` | Image bucket password | Railway bucket, Credentials tab |
+| `TEST_ADMIN_PASSWORD` | **Testing only.** A password (8+ characters) that lets you into the Studio from `/sign-in` without email. **Delete it before launch** | Make one up |
 | `MEDIA_DIR` | Only if using a volume instead of a bucket: where to save images, e.g. `/data/media` | Your volume's mount path |
 
 ---

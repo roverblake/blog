@@ -19,6 +19,7 @@ Work down the list. Every item has a plain test. The README has step-by-step hel
 
 ## Safety
 
+- [ ] **`TEST_ADMIN_PASSWORD` deleted** from Railway's Variables (the yellow "Test sign-in is on" bar in the Studio disappears)
 - [ ] **Database backups turned on** in Railway, Postgres, Backups (README §6)
 - [ ] Studio, then Settings, then **Export everything** downloads a zip that opens
 - [ ] Scheduler service runs every 5 minutes and logs `200` (README §5)
