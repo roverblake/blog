@@ -1,6 +1,6 @@
 import { listPosts } from "@/lib/posts";
 import { siteUrl } from "@/lib/env";
-import { TAGLINE } from "@/lib/settings";
+import { TAGLINE } from "@/lib/site";
 import { postPath, TYPE_LABEL } from "@/lib/urls";
 
 export const dynamic = "force-dynamic";

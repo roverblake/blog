@@ -41,6 +41,9 @@ importers:
       drizzle-orm:
         specifier: ^0.45.4
         version: 0.45.4(kysely@0.29.9)(postgres@4.1.1)
+      fflate:
+        specifier: ^0.8.3
+        version: 0.8.3
       harper.js:
         specifier: ^3.2.0
         version: 3.2.0

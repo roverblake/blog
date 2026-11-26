@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { longDate } from "@/lib/dates";
-import { TAGLINE } from "@/lib/settings";
+import { TAGLINE } from "@/lib/site";
 import { NAV } from "./nav";
 
 /** §4 homepage masthead: date line, name, italic tagline, ruled nav. */

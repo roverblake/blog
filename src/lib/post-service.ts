@@ -1,5 +1,6 @@
 import "server-only";
-import { and, eq, ne } from "drizzle-orm";
+import { and, eq, lte, ne, sql } from "drizzle-orm";
+import { sendPostNewsletter } from "@/lib/newsletter";
 import { db, schema } from "@/db";
 import { countWords, docToText } from "@/lib/content/text";
 import { asDoc } from "@/lib/content/types";
@@ -43,10 +44,22 @@ export async function setPostTags(postId: string, names: string[]) {
   }
 }
 
-/**
- * Called whenever a post goes live (now or on schedule).
- * Newsletter sending hooks in here (Step 9).
- */
+/** Called whenever a post goes live (now or on schedule): emails it to its lists. */
 export async function afterPublish(postId: string) {
-  void postId;
+  try {
+    await sendPostNewsletter(postId);
+  } catch (e) {
+    console.error("[afterPublish]", e);
+  }
+}
+
+/** Publishes every scheduled post whose time has come. Returns how many. */
+export async function publishDuePosts(now = new Date()): Promise<number> {
+  const due = await db
+    .update(posts)
+    .set({ status: "published", publishedAt: sql`${posts.publishAt}` })
+    .where(and(eq(posts.status, "scheduled"), lte(posts.publishAt, now)))
+    .returning({ id: posts.id });
+  for (const p of due) await afterPublish(p.id);
+  return due.length;
 }

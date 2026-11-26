@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { TAGLINE } from "@/lib/settings";
+import { TAGLINE } from "@/lib/site";
 
 const year = () => new Date().getFullYear();
 const ESV = "Scripture quotations from the ESV® Bible · esv.org";

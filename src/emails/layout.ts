@@ -2,19 +2,20 @@ import { escapeHtml } from "@/lib/email";
 
 /**
  * Shared email shell: serif, black on white, one navy button.
- * TODO(design-spec): replace these placeholder values with the exact navy,
- * ink and font stack from docs/design-spec.md.
+ * Colors from docs/design-spec.md §2 (ink, body, slate, navy).
  */
 export const EMAIL_STYLE = {
-  ink: "#000000",
+  ink: "#141414",
   paper: "#ffffff",
-  navy: "#000080",
-  font: "Georgia, 'Times New Roman', serif",
+  navy: "#1F3A68",
+  body: "#2A2723",
+  slate: "#5C5852",
+  font: "'EB Garamond', Georgia, 'Times New Roman', serif",
 };
 
 export function emailButton(href: string, label: string): string {
   const s = EMAIL_STYLE;
-  return `<a href="${escapeHtml(href)}" style="display:inline-block;background:${s.navy};color:#ffffff;font-family:${s.font};font-size:16px;text-decoration:none;padding:12px 24px;">${escapeHtml(label)}</a>`;
+  return `<a href="${escapeHtml(href)}" style="display:inline-block;background:${s.navy};color:#ffffff;font-family:${s.font};font-size:14px;letter-spacing:0.14em;text-transform:uppercase;text-decoration:none;padding:14px 26px;">${escapeHtml(label)}</a>`;
 }
 
 export function emailShell(bodyHtml: string, footerHtml = ""): string {

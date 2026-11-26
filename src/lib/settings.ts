@@ -4,7 +4,7 @@ import { cache } from "react";
 import { db, schema } from "@/db";
 import { asDoc, type Doc } from "@/lib/content/types";
 
-export const TAGLINE = "Reading, thinking, and writing in the light of faith";
+export { TAGLINE } from "@/lib/site";
 
 export const getSetting = cache(async <T>(key: string, fallback: T): Promise<T> => {
   const rows = await db.select().from(schema.settings).where(eq(schema.settings.key, key)).limit(1);
