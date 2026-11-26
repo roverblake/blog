@@ -29,8 +29,13 @@ async function maySignIn(email: string): Promise<boolean> {
   return rows.length > 0;
 }
 
+// Better Auth also reads BETTER_AUTH_URL on its own; make sure it only ever
+// sees a real address, so a typo in Railway can't take the site down.
+const baseURL = authUrl();
+process.env.BETTER_AUTH_URL = baseURL;
+
 export const auth = betterAuth({
-  baseURL: authUrl(),
+  baseURL,
   secret: process.env.BETTER_AUTH_SECRET,
   database: drizzleAdapter(db, {
     provider: "pg",
