@@ -210,7 +210,9 @@ export function ArticleBody({
 
   const rendered = blocks.map((b, i) => {
     let el: ReactNode =
-      i === firstParaIdx && b.type === "paragraph" ? <DropCapParagraph key={i} p={b} ctx={ctx} /> : renderBlock(b, i, ctx);
+      // Called as a function (not <DropCapParagraph/>) so its footnotes are
+      // collected now, before the Notes list below is built.
+      i === firstParaIdx && b.type === "paragraph" ? <Fragment key={i}>{DropCapParagraph({ p: b, ctx })}</Fragment> : renderBlock(b, i, ctx);
     if (fadeLast && i === blocks.length - 1) {
       el = (
         <div key={i} className="gate-fade">

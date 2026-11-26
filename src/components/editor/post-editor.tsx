@@ -194,6 +194,13 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
             bullet: e.isActive("bulletList"),
             ordered: e.isActive("orderedList"),
             words: countWords(e.getText()),
+            notes: (() => {
+              const list: { pos: number; text: string }[] = [];
+              e.state.doc.descendants((n, pos) => {
+                if (n.type.name === "footnote") list.push({ pos, text: (n.attrs.text as string) ?? "" });
+              });
+              return list;
+            })(),
           }
         : null,
   });
@@ -419,6 +426,35 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
           <div className="mt-8">
             <EditorContent editor={editor} />
           </div>
+          {/* Notes, listed as they will appear at the end of the published post */}
+          {editor && (st?.notes.length ?? 0) > 0 && (
+            <section className="footnotes mt-12" aria-labelledby="ed-notes">
+              <div className="section-label">
+                <h2 id="ed-notes">Notes</h2>
+              </div>
+              <ol>
+                {st!.notes.map((n, i) => (
+                  <li key={n.pos}>
+                    <label htmlFor={`note-${i}`} className="sr-only">Note {i + 1}</label>
+                    <textarea
+                      id={`note-${i}`}
+                      ref={autoGrow}
+                      onInput={(ev) => autoGrow(ev.currentTarget)}
+                      rows={1}
+                      value={n.text}
+                      placeholder="Type the note here…"
+                      onChange={(ev) => {
+                        const v = ev.target.value;
+                        editor.chain().command(({ tr }) => { tr.setNodeAttribute(n.pos, "text", v); return true; }).run();
+                      }}
+                      className="field-sizing-content w-full resize-none border-0 bg-transparent align-top outline-none placeholder:text-[#b9b4ab] placeholder:italic"
+                    />
+                  </li>
+                ))}
+              </ol>
+              <p className="m-0 mt-2 text-[14px] text-slate">Notes left empty are not shown on the site.</p>
+            </section>
+          )}
         </div>
       </main>
 

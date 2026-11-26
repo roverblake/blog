@@ -164,6 +164,10 @@ function FootnoteView({ node, updateAttributes, deleteNode }: ReactNodeViewProps
   const [open, setOpen] = useState(!(node.attrs.text as string));
   const [value, setValue] = useState((node.attrs.text as string) ?? "");
   const boxRef = useRef<HTMLTextAreaElement>(null);
+  // Keep in step with edits made in the Notes list under the editor.
+  useEffect(() => {
+    if (!open) setValue((node.attrs.text as string) ?? "");
+  }, [node.attrs.text, open]);
   useEffect(() => {
     if (open) {
       const t = setTimeout(() => boxRef.current?.focus(), 150);
