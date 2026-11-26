@@ -5,6 +5,8 @@
 import { Fragment, type ReactNode } from "react";
 import type { BlockNode, Doc, InlineNode, Mark, Paragraph, TextNode } from "@/lib/content/types";
 import { safeHref } from "@/lib/urls";
+import { isValidVideo, videoEmbedUrl, videoThumbUrl } from "@/lib/embeds";
+import { VideoEmbed } from "@/components/site/video-embed";
 
 type Ctx = { footnotes: string[] };
 
@@ -166,6 +168,38 @@ function renderBlock(b: BlockNode, i: number, ctx: Ctx): ReactNode {
           )}
         </li>
       );
+    case "video": {
+      const { provider, id, caption } = b.attrs ?? {};
+      if (!isValidVideo(provider, id)) return null;
+      return (
+        <figure key={i} className="video-block">
+          <VideoEmbed embedUrl={videoEmbedUrl(provider, id)} thumb={videoThumbUrl(provider, id)} label={caption || "Video"} />
+          {caption ? (
+            <figcaption className="caption-row">
+              <span className="caption">{caption}</span>
+            </figcaption>
+          ) : null}
+        </figure>
+      );
+    }
+    case "audio": {
+      const { src, title, caption } = b.attrs ?? { src: "" };
+      const href = safeHref(src);
+      if (!href) return null;
+      return (
+        <figure key={i} className="audio-block">
+          {title ? <div className="audio-title">{title}</div> : null}
+          <audio controls preload="none" src={href}>
+            <a href={href}>Listen</a>
+          </audio>
+          {caption ? (
+            <figcaption className="caption-row">
+              <span className="caption">{caption}</span>
+            </figcaption>
+          ) : null}
+        </figure>
+      );
+    }
     case "horizontalRule":
       return (
         <div key={i} className="divider" role="separator">
@@ -173,11 +207,11 @@ function renderBlock(b: BlockNode, i: number, ctx: Ctx): ReactNode {
         </div>
       );
     case "image": {
-      const { src, alt, caption, credit } = b.attrs ?? { src: "" };
+      const { src, alt, caption, credit, size } = b.attrs ?? { src: "" };
       const href = safeHref(src);
       if (!href) return null;
       return (
-        <figure key={i}>
+        <figure key={i} className={size === "wide" ? "wide" : undefined}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={href} alt={alt ?? ""} loading="lazy" decoding="async" />
           {caption || credit ? (

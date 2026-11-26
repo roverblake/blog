@@ -12,7 +12,7 @@ const TYPES = [
   ["parish_letter", "Parish letter"],
 ] as const;
 
-export function SettingsPanel({ id, title, status, initial }: { id: string; title: string; status: string; initial: SettingsInitial }) {
+export function SettingsPanel({ id, title, status, initial, onTypeChange }: { id: string; title: string; status: string; initial: SettingsInitial; onTypeChange?: (t: PostSettings["type"]) => void }) {
   const [s, setS] = useState<PostSettings>(initial);
   const [tagText, setTagText] = useState(initial.tags.join(", "));
   const [imgSrc, setImgSrc] = useState(initial.headerImageSrc);
@@ -78,7 +78,7 @@ export function SettingsPanel({ id, title, status, initial }: { id: string; titl
 
       <div>
         <label htmlFor="ps-type" className="s-label">Type</label>
-        <select id="ps-type" className="s-select" value={s.type} onChange={(e) => set("type", e.target.value as PostSettings["type"])}>
+        <select id="ps-type" className="s-select" value={s.type} onChange={(e) => { const t = e.target.value as PostSettings["type"]; set("type", t); onTypeChange?.(t); }}>
           {TYPES.map(([v, l]) => (
             <option key={v} value={v}>{l}</option>
           ))}

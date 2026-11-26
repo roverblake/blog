@@ -55,7 +55,11 @@ export async function getObject(key: string): Promise<{ body: Buffer; contentTyp
     }
     const body = await readFile(path.join(localDir, key));
     const ext = path.extname(key).slice(1);
-    const contentType = ext === "webp" ? "image/webp" : ext === "png" ? "image/png" : "image/jpeg";
+    const types: Record<string, string> = {
+      webp: "image/webp", png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg",
+      mp3: "audio/mpeg", m4a: "audio/mp4", aac: "audio/aac", ogg: "audio/ogg", wav: "audio/wav",
+    };
+    const contentType = types[ext] ?? "application/octet-stream";
     return { body, contentType };
   } catch {
     return null;

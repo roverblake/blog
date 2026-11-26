@@ -8,6 +8,7 @@ import type { posts } from "@/db/schema";
 import { postPath, TYPE_LABEL } from "@/lib/urls";
 import { MoreToRead } from "./post-rows";
 import { SubscriberGate } from "./subscriber-gate";
+import { FleurDeLis } from "./fleuron-rule";
 
 /** A post without its full text; pass the gated document separately. */
 export type PostMeta = Omit<typeof posts.$inferSelect, "content" | "contentText">;
@@ -35,6 +36,58 @@ export function PostArticle({
   const date = post.publishedAt ?? post.publishAt ?? post.updatedAt;
   const kicker = post.kicker || TYPE_LABEL[post.type];
   const minutes = readingMinutes(post.wordCount);
+
+  // Commonplace: the quote leads, then a small ornament, then the note.
+  const isCommonplace = post.type === "commonplace";
+  const first = doc.content?.[0];
+  const quote = isCommonplace && first?.type === "pullQuote" ? first : null;
+  const bodyDoc: Doc = quote ? { ...doc, content: doc.content!.slice(1) } : doc;
+
+  if (isCommonplace) {
+    return (
+      <article>
+        <div className="mx-auto max-w-reading px-6 pt-14 sm:pt-20">
+          <div className="text-center text-[13px] uppercase tracking-[0.26em] text-slate sm:text-[14px]">
+            {post.kicker || "Commonplace"} · <time dateTime={date.toISOString()}>{fullDate(date)}</time>
+          </div>
+          {quote ? (
+            <div className="article-body mt-8">
+              <blockquote className="pull-quote commonplace-quote">
+                {(quote.content ?? []).map((p, j) => (
+                  <p key={j}>{(p.content ?? []).map((n) => (n.type === "text" ? n.text : "")).join("")}</p>
+                ))}
+                {quote.attrs?.cite ? <cite>{quote.attrs.cite}</cite> : null}
+              </blockquote>
+            </div>
+          ) : (
+            <h1 className="m-0 mt-6 text-center font-display text-[40px] leading-[1.1] font-normal">{post.title}</h1>
+          )}
+          {(bodyDoc.content?.length ?? 0) > 0 && (
+            <div className="mt-10 flex items-center justify-center gap-3 text-ink" aria-hidden="true">
+              <span className="h-px w-10 bg-rule" />
+              <FleurDeLis className="h-4 w-4" />
+              <span className="h-px w-10 bg-rule" />
+            </div>
+          )}
+        </div>
+        <div className="article-body commonplace-note mx-auto max-w-reading px-6 pt-8 pb-6">
+          <ArticleBody doc={bodyDoc} dropCap={false} fadeLast={truncated} />
+          {truncated && <SubscriberGate list="essays" returnTo={postPath(post)} />}
+          {tags.length > 0 && (
+            <div className="mt-6 flex flex-wrap items-center gap-2.5 border-t border-rule pt-4.5 text-[15px] leading-normal">
+              <span className="mr-1.5 uppercase tracking-[0.16em] text-slate">Filed under</span>
+              {tags.map((t) => (
+                <Link key={t.slug} href={`/tags/${t.slug}`} className="inline-flex min-h-11 items-center border border-rule px-3 no-underline sm:min-h-0 sm:py-1">
+                  {t.name}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+        <MoreToRead items={more} />
+      </article>
+    );
+  }
 
   return (
     <article>

@@ -5,6 +5,7 @@ import Blockquote from "@tiptap/extension-blockquote";
 import { TextSelection } from "@tiptap/pm/state";
 import { NodeViewContent, NodeViewWrapper, ReactNodeViewRenderer, type ReactNodeViewProps } from "@tiptap/react";
 import { useEffect, useRef, useState } from "react";
+import { videoThumbUrl } from "@/lib/embeds";
 
 /** Let typing in a node's own inputs (captions, footnote box) bypass the editor. */
 const ownInputs = {
@@ -20,6 +21,8 @@ declare module "@tiptap/core" {
     pullQuote: { setPullQuote: () => ReturnType };
     image: { insertImage: (attrs: { src: string; mediaId?: string; alt?: string }) => ReturnType };
     footnote: { insertFootnote: (text: string) => ReturnType };
+    video: { insertVideo: (attrs: { provider: "youtube" | "vimeo"; id: string }) => ReturnType };
+    audio: { insertAudio: (attrs: { src: string; title?: string }) => ReturnType };
   }
 }
 
@@ -111,9 +114,14 @@ export const PullQuote = Node.create({
 });
 
 function ImageView({ node, updateAttributes, selected }: ReactNodeViewProps) {
-  const a = node.attrs as { src: string; alt: string | null; caption: string | null; credit: string | null };
+  const a = node.attrs as { src: string; alt: string | null; caption: string | null; credit: string | null; size: string | null };
+  const wide = a.size === "wide";
   return (
-    <NodeViewWrapper as="figure" data-drag-handle className={selected ? "ProseMirror-selectednode" : ""}>
+    <NodeViewWrapper as="figure" data-drag-handle className={`${wide ? "wide " : ""}${selected ? "ProseMirror-selectednode" : ""}`}>
+      <span className="media-tools" contentEditable={false}>
+        <button type="button" aria-pressed={!wide} onClick={() => updateAttributes({ size: "normal" })}>Text width</button>
+        <button type="button" aria-pressed={wide} onClick={() => updateAttributes({ size: "wide" })}>Wide</button>
+      </span>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={a.src} alt={a.alt ?? ""} />
       <div className="caption-row" contentEditable={false}>
@@ -144,6 +152,7 @@ export const FigureImage = Node.create({
     caption: { default: null },
     credit: { default: null },
     mediaId: { default: null },
+    size: { default: "normal" },
   }),
   parseHTML: () => [{ tag: "figure img", getAttrs: (el: HTMLElement | string) => ({ src: (el as HTMLElement).getAttribute("src") }) }],
   renderHTML: ({ HTMLAttributes }: { HTMLAttributes: Record<string, string> }) => ["figure", {}, ["img", { src: HTMLAttributes.src, alt: HTMLAttributes.alt ?? "" }]],
@@ -156,6 +165,87 @@ export const FigureImage = Node.create({
         (attrs: { src: string; mediaId?: string; alt?: string }) =>
         ({ commands }: { commands: { insertContent: (c: object) => boolean } }) =>
           commands.insertContent({ type: "image", attrs }),
+    };
+  },
+});
+
+function VideoView({ node, updateAttributes, selected }: ReactNodeViewProps) {
+  const a = node.attrs as { provider: "youtube" | "vimeo"; id: string; caption: string | null };
+  const thumb = videoThumbUrl(a.provider, a.id);
+  return (
+    <NodeViewWrapper as="figure" data-drag-handle className={`video-block ${selected ? "ProseMirror-selectednode" : ""}`}>
+      <span className="video-frame" contentEditable={false}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        {thumb && <img src={thumb} alt="" />}
+        <span className="video-play" aria-hidden="true" />
+        <span className="video-source">{a.provider === "youtube" ? "YouTube" : "Vimeo"} video</span>
+      </span>
+      <div className="caption-row" contentEditable={false}>
+        <input className="caption" placeholder="Caption (optional)" aria-label="Video caption" value={a.caption ?? ""} onChange={(e) => updateAttributes({ caption: e.target.value })} />
+      </div>
+    </NodeViewWrapper>
+  );
+}
+
+/** A YouTube or Vimeo video. Readers see a still until they press play. */
+export const Video = Node.create({
+  name: "video",
+  group: "block",
+  atom: true,
+  draggable: true,
+  addAttributes: () => ({ provider: { default: "youtube" }, id: { default: "" }, caption: { default: null } }),
+  parseHTML: () => [{ tag: "figure[data-video]" }],
+  renderHTML: ({ HTMLAttributes }: { HTMLAttributes: Record<string, string> }) => ["figure", { "data-video": HTMLAttributes.id }],
+  addNodeView() {
+    return ReactNodeViewRenderer(VideoView, ownInputs);
+  },
+  addCommands() {
+    return {
+      insertVideo:
+        (attrs: { provider: "youtube" | "vimeo"; id: string }) =>
+        ({ commands }: { commands: { insertContent: (c: object) => boolean } }) =>
+          commands.insertContent([{ type: "video", attrs }, { type: "paragraph" }]),
+    };
+  },
+});
+
+function AudioView({ node, updateAttributes, selected }: ReactNodeViewProps) {
+  const a = node.attrs as { src: string; title: string | null; caption: string | null };
+  return (
+    <NodeViewWrapper as="figure" data-drag-handle className={`audio-block ${selected ? "ProseMirror-selectednode" : ""}`}>
+      <input
+        className="audio-title"
+        placeholder="Title (e.g. Sermon for Advent Sunday)"
+        aria-label="Audio title"
+        value={a.title ?? ""}
+        onChange={(e) => updateAttributes({ title: e.target.value })}
+      />
+      <audio controls preload="metadata" src={a.src} contentEditable={false} />
+      <div className="caption-row" contentEditable={false}>
+        <input className="caption" placeholder="Caption (optional)" aria-label="Audio caption" value={a.caption ?? ""} onChange={(e) => updateAttributes({ caption: e.target.value })} />
+      </div>
+    </NodeViewWrapper>
+  );
+}
+
+/** An audio recording with a title and simple player. */
+export const Audio = Node.create({
+  name: "audio",
+  group: "block",
+  atom: true,
+  draggable: true,
+  addAttributes: () => ({ src: { default: "" }, title: { default: null }, caption: { default: null } }),
+  parseHTML: () => [{ tag: "figure[data-audio]" }],
+  renderHTML: ({ HTMLAttributes }: { HTMLAttributes: Record<string, string> }) => ["figure", { "data-audio": HTMLAttributes.src }],
+  addNodeView() {
+    return ReactNodeViewRenderer(AudioView, { stopEvent: ({ event }: { event: Event }) => { const t = event.target as HTMLElement | null; return !!t && ["INPUT", "TEXTAREA", "BUTTON", "AUDIO"].includes(t.tagName); } });
+  },
+  addCommands() {
+    return {
+      insertAudio:
+        (attrs: { src: string; title?: string }) =>
+        ({ commands }: { commands: { insertContent: (c: object) => boolean } }) =>
+          commands.insertContent([{ type: "audio", attrs }, { type: "paragraph" }]),
     };
   },
 });

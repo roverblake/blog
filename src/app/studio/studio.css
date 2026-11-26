@@ -96,4 +96,24 @@
 .studio .editor-chrome .s-btn-primary { background: var(--color-ink); border-color: var(--color-ink); color: #fff; padding: 0 16px; }
 .studio .editor-chrome .s-btn-primary:hover { background: #000; color: #fff; }
 .studio .editor-chrome .s-btn-danger { color: #8a2a22; }
-.studio .editor-chrome .s-badge { font-family: inherit; font-size: 12px; letter-spacing: 0.04em; border-radius: 4px; }
+.studio .editor-chrome .s-badge { font-family: inherit; font-size: 12px; letter-spacing: 0.04em; border-radius: 4px; 
+/* Editor-only bits for images, video and audio */
+.studio .ProseMirror figure { position: relative; }
+.studio .ProseMirror .media-tools {
+  position: absolute; top: 10px; right: 10px; z-index: 5; display: none; gap: 2px;
+  background: rgba(255,255,255,.95); border: 1px solid #cfc9be; border-radius: 6px; padding: 2px;
+  font-family: ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 13px;
+}
+.studio .ProseMirror figure:hover .media-tools, .studio .ProseMirror figure.ProseMirror-selectednode .media-tools { display: flex; }
+.studio .ProseMirror .media-tools button { padding: 4px 8px; border-radius: 4px; color: #3d3a35; }
+.studio .ProseMirror .media-tools button[aria-pressed="true"] { background: #141414; color: #fff; }
+.studio .ProseMirror .video-source {
+  position: absolute; left: 12px; bottom: 10px; color: #fff; font-size: 13px; letter-spacing: .12em; text-transform: uppercase;
+  text-shadow: 0 1px 3px rgba(0,0,0,.6);
+}
+.studio .ProseMirror .audio-title {
+  width: 100%; border: 0; background: transparent; outline: none; padding: 0;
+  font-family: var(--font-serif); font-size: 14px; letter-spacing: .18em; text-transform: uppercase; color: var(--color-ink);
+}
+.studio .ProseMirror .audio-title::placeholder { color: #b9b4ab; }
+}

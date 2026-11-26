@@ -126,3 +126,7 @@ At Blake's request the date line above the name is removed. The full-width rule 
 ### Nov 25, 2026: links line, softer rules, light footer, new text styles
 
 At Blake's request: a single line of small-capital links (Essays, Commonplace, Letters, Sermons, Archive, About) in slate, 13px, sits under the fleur-de-lis rule. Section labels ("The Latest") now use a 1px rule-grey line, so the fleur rule is the only black line. The footer is white with a thin rule-grey line on top, ink and slate text. Posts may now use a "Heading" (h3: Caslon Display 26px, ink), strikethrough, underline and inline code, alongside the existing small-capital section label (h2).
+
+### Nov 25, 2026: commonplace posts, video, audio, wide images
+
+At Blake's request (mockup approved): a Commonplace post leads with its quotation in the pull-quote style (Caslon Text italic, 30px desktop / 24px mobile, between 1px ink rules, source in small capitals), then a small fleur-de-lis between two short rule-grey lines, then the note in 19px body text (17px on phones), with no drop cap and no large title. Videos (YouTube, Vimeo) show a 16:9 still with a quiet round play mark and load the player only when pressed. Audio shows its title in small capitals over a slim player between rule-grey lines. In-text images may be "Text width" or "Wide" (up to 860px). The post page header uses a single rule-grey line instead of the double rule.

@@ -1,5 +1,5 @@
 /** A small fleur-de-lis emblem (inline SVG, so it looks the same everywhere). */
-function FleurDeLis({ className = "" }: { className?: string }) {
+export function FleurDeLis({ className = "" }: { className?: string }) {
   return (
     <svg viewBox="2 1 36 34" aria-hidden="true" focusable="false" className={className} fill="currentColor">
       <path d="M20 2 C23.5 7 25 11 24 16 C23.3 19 22 21 21.2 23 L18.8 23 C18 21 16.7 19 16 16 C15 11 16.5 7 20 2 Z" />

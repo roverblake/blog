@@ -1,3 +1,4 @@
+import { isValidVideo, videoThumbUrl, videoWatchUrl } from "@/lib/embeds";
 import { escapeHtml as e } from "@/lib/email";
 import type { BlockNode, Doc, InlineNode } from "@/lib/content/types";
 import { safeHref } from "@/lib/urls";
@@ -68,6 +69,19 @@ function block(b: BlockNode, notes: string[], base: string): string {
               .join("")}</li>`,
         )
         .join("")}</${tag}>`;
+    }
+    case "video": {
+      const { provider, id, caption } = b.attrs ?? ({} as { provider?: string; id?: string; caption?: string | null });
+      if (!isValidVideo(provider, id)) return "";
+      const thumb = videoThumbUrl(provider, id);
+      const link = e(videoWatchUrl(provider, id));
+      const img = thumb ? `<img src="${e(abs(thumb, base))}" alt="Watch the video" width="560" style="display:block;width:100%;max-width:560px;height:auto;border:0;">` : `<span style="display:block;padding:40px 0;background:${S.ink};color:#fff;text-align:center;">Watch the video</span>`;
+      return `<div style="margin:8px 0 22px;"><a href="${link}">${img}</a><div style="padding-top:6px;font-size:14px;font-style:italic;color:${S.slate};">${caption ? e(caption) + " · " : ""}<a href="${link}" style="color:${S.slate};">Watch on ${provider === "youtube" ? "YouTube" : "Vimeo"}</a></div></div>`;
+    }
+    case "audio": {
+      const { src, title } = b.attrs ?? ({} as { src?: string; title?: string | null });
+      if (!src) return "";
+      return `<div style="margin:8px 0 22px;padding:12px 0;border-top:1px solid #ddd8cf;border-bottom:1px solid #ddd8cf;"><a href="${e(abs(src, base))}" style="color:${S.ink};">&#9654; Listen${title ? `: ${e(title)}` : ""}</a></div>`;
     }
     case "horizontalRule":
       return `<p style="margin:8px 0 22px;text-align:center;letter-spacing:0.6em;color:#9aa0a8;">· · ·</p>`;

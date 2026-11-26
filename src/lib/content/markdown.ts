@@ -33,6 +33,15 @@ export function docToMarkdown(doc: Doc, mapImage: (src: string) => string = (s) 
     switch (b.type) {
       case "paragraph":
         return prefix + inline(b.content);
+      case "video": {
+        const a = (b as { attrs?: { provider?: string; id?: string; caption?: string | null } }).attrs ?? {};
+        const url = a.provider === "vimeo" ? `https://vimeo.com/${a.id}` : `https://www.youtube.com/watch?v=${a.id}`;
+        return `[Video${a.caption ? `: ${a.caption}` : ""}](${url})`;
+      }
+      case "audio": {
+        const a = (b as { attrs?: { src?: string; title?: string | null } }).attrs ?? {};
+        return `[Audio${a.title ? `: ${a.title}` : ""}](${a.src})`;
+      }
       case "heading":
         return `${b.attrs?.level === 3 ? "###" : "##"} ${inline(b.content)}`;
       case "blockquote":

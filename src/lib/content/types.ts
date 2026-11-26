@@ -32,8 +32,11 @@ export type ImageNode = {
     caption?: string | null;
     credit?: string | null;
     mediaId?: string | null;
+    size?: "normal" | "wide" | null;
   };
 };
+export type VideoNode = { type: "video"; attrs: { provider: "youtube" | "vimeo"; id: string; caption?: string | null } };
+export type AudioNode = { type: "audio"; attrs: { src: string; title?: string | null; caption?: string | null } };
 /** Everything after this node is for subscribers only. */
 export type PaywallNode = { type: "paywall" };
 
@@ -47,6 +50,8 @@ export type BlockNode =
   | ListItem
   | HorizontalRule
   | ImageNode
+  | VideoNode
+  | AudioNode
   | PaywallNode;
 
 export type Doc = { type: "doc"; content?: BlockNode[] };

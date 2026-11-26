@@ -10,7 +10,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { saveDraft, uploadImage } from "@/app/studio/actions";
 import { countWords, readingMinutes } from "@/lib/content/text";
-import { BlockQuoteWithSource, FigureImage, Footnote, PullQuote, Paywall } from "./extensions";
+import { Audio, BlockQuoteWithSource, FigureImage, Footnote, PullQuote, Paywall, Video } from "./extensions";
+import { parseVideoUrl } from "@/lib/embeds";
 import { PostActions } from "./post-actions";
 import { SettingsPanel, type SettingsInitial } from "./settings-panel";
 import { createSlash, type SlashBridge, type SlashItem } from "./slash";
@@ -70,6 +71,8 @@ function slashItems(onError: (m: string) => void): SlashItem[] {
     { title: "Numbered list", hint: "1. 2. 3.", run: (e, r) => del(e, r).toggleOrderedList().run() },
     { title: "Divider", hint: "· · ·", run: (e, r) => del(e, r).setHorizontalRule().run() },
     { title: "Image", hint: "Upload a picture", run: (e, r) => { del(e, r).run(); pickImage(e, onError); } },
+    { title: "Video", hint: "YouTube or Vimeo link", run: (e, r) => { del(e, r).run(); window.dispatchEvent(new CustomEvent("editor-embed", { detail: "video" })); } },
+    { title: "Audio", hint: "Upload or link a recording", run: (e, r) => { del(e, r).run(); window.dispatchEvent(new CustomEvent("editor-embed", { detail: "audio" })); } },
     { title: "Footnote", hint: "Numbered note", run: (e, r) => del(e, r).insertFootnote("").run() },
     { title: "Paywall line", hint: "Subscribers only below", run: (e, r) => del(e, r).setPaywall().run() },
   ];
@@ -84,7 +87,39 @@ function autoGrow(el: HTMLTextAreaElement | null) {
   el.style.height = `${el.scrollHeight}px`;
 }
 
+/* ---------------- Commonplace helpers ---------------- */
+type PType = EditorInitial["settings"]["type"];
+
+/** Pulls the leading pull quote (the commonplace quotation) out of a document. */
+function splitCommonplace(doc: JSONContent): { quote: string; source: string; rest: JSONContent[] } {
+  const blocks = doc.content ?? [];
+  const first = blocks[0];
+  if (first?.type !== "pullQuote") return { quote: "", source: "", rest: blocks };
+  const quote = (first.content ?? []).map((p) => (p.content ?? []).map((n) => n.text ?? "").join("")).join("\n\n");
+  return { quote, source: (first.attrs?.cite as string) ?? "", rest: blocks.slice(1) };
+}
+
+function quoteNode(quote: string, source: string): JSONContent {
+  const paras = quote.split(/\n\s*\n/).map((t) => t.replace(/\s*\n\s*/g, " ").trim()).filter(Boolean);
+  return {
+    type: "pullQuote",
+    attrs: { cite: source.trim() || null },
+    content: paras.map((t) => ({ type: "paragraph", content: [{ type: "text", text: t }] })),
+  };
+}
+
+/** A short title from the opening words of the quote (used for links and search). */
+function titleFromQuote(quote: string): string {
+  const words = quote.replace(/\s+/g, " ").trim().split(" ");
+  if (words.length <= 9) return words.join(" ");
+  return `${words.slice(0, 9).join(" ").replace(/[,;:.!?]+$/, "")}…`;
+}
+
 export function PostEditor({ initial }: { initial: EditorInitial }) {
+  const initSplit = initial.settings.type === "commonplace" ? splitCommonplace(initial.content) : null;
+  const [ptype, setPtype] = useState<PType>(initial.settings.type);
+  const [quote, setQuote] = useState(initSplit?.quote ?? "");
+  const [source, setSource] = useState(initSplit?.source ?? "");
   const [title, setTitle] = useState(initial.title);
   const [subtitle, setSubtitle] = useState(initial.subtitle);
   const [saveState, setSaveState] = useState<SaveState>("saved");
@@ -95,6 +130,14 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
   const [grammarOpen, setGrammarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
+  const [embed, setEmbed] = useState<"video" | "audio" | null>(null);
+  const [embedValue, setEmbedValue] = useState("");
+  const [uploadingAudio, setUploadingAudio] = useState(false);
+  useEffect(() => {
+    const on = (e: Event) => { setEmbedValue(""); setEmbed((e as CustomEvent<"video" | "audio">).detail); };
+    window.addEventListener("editor-embed", on);
+    return () => window.removeEventListener("editor-embed", on);
+  }, []);
   const [slash, setSlash] = useState<{ items: SlashItem[]; rect: DOMRect | null; index: number; command: (i: SlashItem) => void } | null>(null);
   const slashRef = useRef(slash);
   slashRef.current = slash;
@@ -132,6 +175,8 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
       PullQuote,
       FigureImage,
       Footnote,
+      Video,
+      Audio,
       createSlash(slashItems(onError), bridge),
     ],
     [onError],
@@ -139,7 +184,7 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
 
   const editor = useEditor({
     extensions,
-    content: initial.content,
+    content: initSplit ? { type: "doc", content: initSplit.rest.length ? initSplit.rest : [{ type: "paragraph" }] } : initial.content,
     immediatelyRender: false,
     editorProps: {
       attributes: { class: "article-body", spellcheck: "true", "aria-label": "Post body" },
@@ -161,7 +206,18 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
         }
         return false;
       },
-      handlePaste: (_view, event) => {
+      handlePaste: (view, event) => {
+        // A YouTube or Vimeo link pasted on an empty line becomes a video (as in Substack).
+        const text = event.clipboardData?.getData("text/plain")?.trim() ?? "";
+        const { $from, empty } = view.state.selection;
+        if (text && !/\s/.test(text) && empty && $from.parent.type.name === "paragraph" && $from.parent.content.size === 0) {
+          const ref = parseVideoUrl(text);
+          if (ref && editorRef.current) {
+            event.preventDefault();
+            editorRef.current.chain().focus().insertVideo(ref).run();
+            return true;
+          }
+        }
         const images = [...(event.clipboardData?.files ?? [])].filter((f) => f.type.startsWith("image/"));
         if (!images.length) return false;
         event.preventDefault();
@@ -206,16 +262,23 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
   });
 
   /* ---------------- Autosave ---------------- */
-  const latest = useRef({ title, subtitle });
-  latest.current = { title, subtitle };
+  const latest = useRef({ title, subtitle, ptype, quote, source });
+  latest.current = { title, subtitle, ptype, quote, source };
   const save = useCallback(async () => {
     if (!editorRef.current) return;
     setSaveState("saving");
     try {
       // ProseMirror stores attributes in prototype-less objects, which are lost
       // when sent to the server; a JSON round-trip turns them into plain objects.
-      const content = JSON.parse(JSON.stringify(editorRef.current.getJSON())) as { type: "doc" };
-      const res = await saveDraft(initial.id, { ...latest.current, content });
+      const body = JSON.parse(JSON.stringify(editorRef.current.getJSON())) as { type: "doc"; content?: JSONContent[] };
+      const L = latest.current;
+      const isCp = L.ptype === "commonplace";
+      const content = isCp && L.quote.trim() ? { type: "doc" as const, content: [quoteNode(L.quote, L.source), ...(body.content ?? [])] } : body;
+      const res = await saveDraft(initial.id, {
+        title: isCp ? (L.quote.trim() ? titleFromQuote(L.quote) : L.title) : L.title,
+        subtitle: isCp ? "" : L.subtitle,
+        content,
+      });
       setSavedAt(res.savedAt ? new Date(res.savedAt) : new Date());
       setSaveState((s) => (s === "saving" ? "saved" : s));
     } catch {
@@ -227,7 +290,29 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
     if (saveState !== "dirty" && saveState !== "error") return;
     const t = setTimeout(save, saveState === "error" ? 5000 : 1200);
     return () => clearTimeout(t);
-  }, [saveState, save, title, subtitle]);
+  }, [saveState, save, title, subtitle, quote, source]);
+
+  /* Switching to or from the Commonplace type moves the quote in or out of the text. */
+  const onTypeChange = (t: PType) => {
+    const e = editorRef.current;
+    if (!e) return setPtype(t);
+    if (t === "commonplace" && ptype !== "commonplace") {
+      const sp = splitCommonplace(e.getJSON());
+      if (sp.quote) {
+        setQuote(sp.quote);
+        setSource(sp.source);
+        e.commands.setContent({ type: "doc", content: sp.rest.length ? sp.rest : [{ type: "paragraph" }] });
+      }
+    } else if (t !== "commonplace" && ptype === "commonplace" && quote.trim()) {
+      const doc = e.getJSON();
+      e.commands.setContent({ type: "doc", content: [quoteNode(quote, source), ...(doc.content ?? [])] });
+      if (!title.trim() || title === titleFromQuote(quote)) setTitle(titleFromQuote(quote));
+      setQuote("");
+      setSource("");
+    }
+    setPtype(t);
+    setSaveState("dirty");
+  };
 
   useEffect(() => {
     const warn = (e: BeforeUnloadEvent) => {
@@ -350,6 +435,8 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
               {moreOpen && (
                 <div role="menu" className="absolute right-0 z-40 mt-1 w-64 border border-[#cfc9be] bg-white py-1 shadow-xl" onMouseLeave={() => setMoreOpen(false)}>
                   {[
+                    ["Video", "YouTube or Vimeo", () => { setEmbedValue(""); setEmbed("video"); }],
+                    ["Audio", "Upload or link", () => { setEmbedValue(""); setEmbed("audio"); }],
                     ["Divider", "· · ·", (e: Editor) => e.chain().focus().setHorizontalRule().run()],
                     ["Pull quote", "Centered between rules", (e: Editor) => e.chain().focus().setPullQuote().run()],
                     ["Footnote", "Numbered note", insertFootnote],
@@ -390,6 +477,69 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
             <button type="button" className="s-btn" onClick={() => { setLinkValue(""); editor?.chain().focus().unsetLink().run(); setLinkOpen(false); }}>Remove link</button>
           </div>
         )}
+        {embed && (
+          <div className="flex flex-wrap items-center justify-center gap-2 border-b border-rule px-6 py-2">
+            <label htmlFor="embed-url" className="text-[15px] text-slate">
+              {embed === "video" ? "Paste a YouTube or Vimeo link" : "Paste a link to an MP3, or"}
+            </label>
+            {embed === "audio" && (
+              <label className="s-btn cursor-pointer">
+                {uploadingAudio ? "Uploading…" : "Upload a file"}
+                <input
+                  type="file"
+                  accept="audio/*"
+                  className="sr-only"
+                  disabled={uploadingAudio}
+                  onChange={async (ev) => {
+                    const file = ev.target.files?.[0];
+                    if (!file || !editor) return;
+                    setUploadingAudio(true);
+                    const fd = new FormData();
+                    fd.set("file", file);
+                    const res = await fetch("/studio/upload-audio", { method: "POST", body: fd }).then((r) => r.json()).catch(() => ({ error: "Upload failed." }));
+                    setUploadingAudio(false);
+                    if (res.error) return setNotice(res.error);
+                    editor.chain().focus().insertAudio({ src: res.src, title: res.title }).run();
+                    setEmbed(null);
+                  }}
+                />
+              </label>
+            )}
+            <input
+              id="embed-url"
+              autoFocus
+              className="s-input max-w-[420px]"
+              value={embedValue}
+              placeholder={embed === "video" ? "https://www.youtube.com/watch?v=…" : "https://…/recording.mp3"}
+              onChange={(e) => setEmbedValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") { e.preventDefault(); (document.getElementById("embed-add") as HTMLButtonElement | null)?.click(); }
+                if (e.key === "Escape") setEmbed(null);
+              }}
+            />
+            <button
+              id="embed-add"
+              type="button"
+              className="s-btn"
+              onClick={() => {
+                if (!editor) return;
+                const v = embedValue.trim();
+                if (embed === "video") {
+                  const ref = parseVideoUrl(v);
+                  if (!ref) return setNotice("That doesn't look like a YouTube or Vimeo link.");
+                  editor.chain().focus().insertVideo(ref).run();
+                } else {
+                  if (!/^https:\/\/\S+$/.test(v)) return setNotice("Please paste a full link starting with https://");
+                  editor.chain().focus().insertAudio({ src: v }).run();
+                }
+                setEmbed(null);
+              }}
+            >
+              Add
+            </button>
+            <button type="button" className="s-btn" onClick={() => setEmbed(null)}>Cancel</button>
+          </div>
+        )}
         {notice && (
           <div role="alert" className="flex items-center justify-between border-b border-rule bg-[#fbeeee] px-6 py-2 text-[15px]">
             {notice}
@@ -401,28 +551,58 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
       {/* Writing surface: one clean centered column */}
       <main className="flex-1 px-6 pt-12 pb-32">
         <div className="mx-auto max-w-reading">
-          <label htmlFor="title" className="sr-only">Title</label>
-          <textarea
-            id="title"
-            ref={autoGrow}
-            onInput={(e) => autoGrow(e.currentTarget)}
-            rows={1}
-            value={title}
-            onChange={(e) => { setTitle(e.target.value); setSaveState("dirty"); }}
-            placeholder="Title"
-            className="field-sizing-content w-full resize-none border-0 bg-transparent font-display text-[40px] leading-[1.1] outline-none placeholder:text-[#b9b4ab] sm:text-[48px]"
-          />
-          <label htmlFor="subtitle" className="sr-only">Subtitle</label>
-          <textarea
-            id="subtitle"
-            ref={autoGrow}
-            onInput={(e) => autoGrow(e.currentTarget)}
-            rows={1}
-            value={subtitle}
-            onChange={(e) => { setSubtitle(e.target.value); setSaveState("dirty"); }}
-            placeholder="Add a subtitle…"
-            className="field-sizing-content mt-2 w-full resize-none border-0 bg-transparent text-[22px] leading-[1.4] text-subtle outline-none placeholder:text-[#b9b4ab]"
-          />
+          {ptype === "commonplace" ? (
+            <>
+              <div className="text-center text-[13px] uppercase tracking-[0.26em] text-slate">Commonplace</div>
+              <div className="mt-6 border-t border-b border-ink py-7 text-center">
+                <label htmlFor="cp-quote" className="sr-only">Quotation</label>
+                <textarea
+                  id="cp-quote"
+                  ref={autoGrow}
+                  onInput={(e) => autoGrow(e.currentTarget)}
+                  rows={2}
+                  value={quote}
+                  onChange={(e) => { setQuote(e.target.value); setSaveState("dirty"); }}
+                  placeholder="Type or paste the quotation…"
+                  className="field-sizing-content w-full resize-none border-0 bg-transparent text-center font-caslon text-[28px] leading-[1.45] text-ink italic outline-none placeholder:text-[#b9b4ab] sm:text-[30px]"
+                />
+                <label htmlFor="cp-source" className="sr-only">Source</label>
+                <input
+                  id="cp-source"
+                  value={source}
+                  onChange={(e) => { setSource(e.target.value); setSaveState("dirty"); }}
+                  placeholder="Author · Work, chapter"
+                  className="mt-3 w-full border-0 bg-transparent text-center text-[14px] uppercase tracking-[0.16em] text-slate outline-none placeholder:normal-case placeholder:tracking-normal placeholder:text-[#b9b4ab]"
+                />
+              </div>
+              <p className="mt-6 mb-0 text-center text-[14px] text-slate italic">Your note goes below. Leave it empty to post the quotation on its own.</p>
+            </>
+          ) : (
+            <>
+              <label htmlFor="title" className="sr-only">Title</label>
+              <textarea
+                id="title"
+                ref={autoGrow}
+                onInput={(e) => autoGrow(e.currentTarget)}
+                rows={1}
+                value={title}
+                onChange={(e) => { setTitle(e.target.value); setSaveState("dirty"); }}
+                placeholder="Title"
+                className="field-sizing-content w-full resize-none border-0 bg-transparent font-display text-[40px] leading-[1.1] outline-none placeholder:text-[#b9b4ab] sm:text-[48px]"
+              />
+              <label htmlFor="subtitle" className="sr-only">Subtitle</label>
+              <textarea
+                id="subtitle"
+                ref={autoGrow}
+                onInput={(e) => autoGrow(e.currentTarget)}
+                rows={1}
+                value={subtitle}
+                onChange={(e) => { setSubtitle(e.target.value); setSaveState("dirty"); }}
+                placeholder="Add a subtitle…"
+                className="field-sizing-content mt-2 w-full resize-none border-0 bg-transparent text-[22px] leading-[1.4] text-subtle outline-none placeholder:text-[#b9b4ab]"
+              />
+            </>
+          )}
           <div className="mt-8">
             <EditorContent editor={editor} />
           </div>
@@ -473,7 +653,7 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
           </div>
           {grammarOpen && editor && <GrammarPanel editor={editor} dictionary={initial.dictionary} onClose={() => setGrammarOpen(false)} />}
           <div className={settingsOpen ? "" : "hidden"}>
-            <SettingsPanel id={initial.id} title={title} status={initial.status} initial={initial.settings} />
+            <SettingsPanel id={initial.id} title={ptype === "commonplace" && quote.trim() ? titleFromQuote(quote) : title} status={initial.status} initial={initial.settings} onTypeChange={onTypeChange} />
           </div>
         </aside>
       )}
