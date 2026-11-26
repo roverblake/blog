@@ -9,6 +9,9 @@ import { postPath, TYPE_LABEL } from "@/lib/urls";
 import { MoreToRead } from "./post-rows";
 import { SubscriberGate } from "./subscriber-gate";
 import { FleurDeLis } from "./fleuron-rule";
+import { NewsletterBox } from "./newsletter-box";
+import { ShareLinks } from "./share-links";
+import { siteUrl } from "@/lib/env";
 
 /** A post without its full text; pass the gated document separately. */
 export type PostMeta = Omit<typeof posts.$inferSelect, "content" | "contentText">;
@@ -54,7 +57,7 @@ export function PostArticle({
             <div className="article-body mt-8">
               <blockquote className="pull-quote commonplace-quote">
                 {(quote.content ?? []).map((p, j) => (
-                  <p key={j}>{(p.content ?? []).map((n) => (n.type === "text" ? n.text : "")).join("")}</p>
+                  <p key={j}>{(p.content ?? []).map((n, k) => (n.type === "text" ? n.text : n.type === "hardBreak" ? <br key={k} /> : null))}</p>
                 ))}
                 {quote.attrs?.cite ? <cite>{quote.attrs.cite}</cite> : null}
               </blockquote>
@@ -83,7 +86,15 @@ export function PostArticle({
               ))}
             </div>
           )}
+          <div className={`${tags.length > 0 ? "mt-3" : "mt-6 border-t border-rule pt-4.5"}`}>
+            <ShareLinks url={`${siteUrl()}${postPath(post)}`} title={post.title} />
+          </div>
         </div>
+        {!truncated && (
+          <div className="mx-auto box-border max-w-reading px-6 pt-4 pb-6">
+            <NewsletterBox />
+          </div>
+        )}
         <MoreToRead items={more} />
       </article>
     );
@@ -143,8 +154,16 @@ export function PostArticle({
             ))}
           </div>
         )}
+        <div className={`${tags.length > 0 ? "mt-3" : "mt-6 border-t border-rule pt-4.5"}`}>
+          <ShareLinks url={`${siteUrl()}${postPath(post)}`} title={post.title} />
+        </div>
       </div>
 
+      {!truncated && (
+        <div className="mx-auto box-border max-w-reading px-6 pt-4 pb-6">
+          <NewsletterBox />
+        </div>
+      )}
       <MoreToRead items={more} />
     </article>
   );

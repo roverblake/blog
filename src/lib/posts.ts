@@ -31,6 +31,8 @@ export type PostListItem = Awaited<ReturnType<typeof listPosts>>[number];
 export async function listPosts(opts: {
   type?: PostType | PostType[];
   tagSlug?: string;
+  /** Words to look for in titles, subtitles and summaries (and the text of free posts). */
+  search?: string;
   excludeIds?: string[];
   limit?: number;
   offset?: number;
@@ -42,6 +44,15 @@ export async function listPosts(opts: {
     where.push(
       sql`exists (select 1 from ${postTags} join ${tags} on ${tags.id} = ${postTags.tagId}
           where ${postTags.postId} = ${posts.id} and ${tags.slug} = ${opts.tagSlug})`,
+    );
+  }
+  const q = opts.search?.trim().slice(0, 100);
+  if (q) {
+    const like = `%${q.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
+    // Subscriber-only text is never searched, so a search can't reveal it.
+    where.push(
+      sql`(${posts.title} ilike ${like} or coalesce(${posts.subtitle}, '') ilike ${like} or coalesce(${posts.summary}, '') ilike ${like}
+          or (${posts.visibility} = 'everyone' and ${posts.contentText} ilike ${like}))`,
     );
   }
   return db
@@ -80,6 +91,20 @@ export async function withShortQuotes<T extends PostListItem>(items: T[]): Promi
     found.set(r.id, { quote, cite: q.cite });
   }
   return items.map((p) => ({ ...p, ...found.get(p.id) }));
+}
+
+/** A small square thumbnail for each post that has a header image. */
+export async function withThumbs<T extends PostListItem>(items: T[]): Promise<(T & { thumb?: string })[]> {
+  const ids = [...new Set(items.map((p) => p.headerImageId).filter((x): x is string => !!x))];
+  if (!ids.length) return items;
+  const rows = await db.select({ id: media.id, storageKey: media.storageKey, variants: media.variants }).from(media).where(inArray(media.id, ids));
+  const src = new Map<string, string>();
+  for (const m of rows) {
+    const vs = [...(m.variants ?? [])].sort((a, b) => a.width - b.width);
+    const v = vs.find((x) => x.width >= 200) ?? vs.at(-1);
+    src.set(m.id, mediaUrl(v?.storageKey ?? m.storageKey));
+  }
+  return items.map((p) => (p.headerImageId && src.has(p.headerImageId) ? { ...p, thumb: src.get(p.headerImageId) } : p));
 }
 
 export async function getImage(id: string | null) {

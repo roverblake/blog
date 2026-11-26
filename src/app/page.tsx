@@ -5,7 +5,7 @@ import { Masthead } from "@/components/site/masthead";
 import { NewsletterBox } from "@/components/site/newsletter-box";
 import { PostRows } from "@/components/site/post-rows";
 import { QuoteGrid } from "@/components/site/quotes";
-import { getCommonplaceQuotes, getImage, getLeadPost, listPosts, openingOf, withShortQuotes } from "@/lib/posts";
+import { getCommonplaceQuotes, getImage, getLeadPost, listPosts, openingOf } from "@/lib/posts";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +13,7 @@ export default async function Home() {
   const lead = await getLeadPost();
   const [image, latest, quotes] = await Promise.all([
     getImage(lead?.headerImageId ?? null),
-    listPosts({ excludeIds: lead ? [lead.id] : [], limit: 5 }).then(withShortQuotes),
+    listPosts({ excludeIds: lead ? [lead.id] : [], limit: 5 }),
     getCommonplaceQuotes(2),
   ]);
 
@@ -26,7 +26,7 @@ export default async function Home() {
 
           <div>
             <div className="section-label">
-              <h2>The Latest</h2>
+              <h2>Recent</h2>
               <Link href="/archive">More…</Link>
             </div>
             <PostRows items={latest} />

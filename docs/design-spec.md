@@ -143,3 +143,9 @@ The site name and the italic tagline are now set in Studio → Settings → Site
 
 ### Amendment: commonplace quotes in "The Latest" (Nov 26, 2026)
 On the home page, a commonplace post whose quotation is 45 words or fewer shows the whole quotation in its row instead of a title: Caslon italic 20px in curly quotes, with the source below in 16px slate. Longer quotations are cut to their first 30 words and end with an ellipsis (…) inside the closing quote mark; the whole row links to the post, where the full quotation and note appear. Only the free part of a post is read.
+
+### Amendment: Substack-style reading features (Nov 26, 2026)
+- Home: the list under the lead story is now labelled **Recent** (was "The Latest", which repeated the lead story's role).
+- Post rows (home, section pages, tags, archive): the italic subtitle (17px slate) sits under the title, and a post with a header image shows a square thumbnail at the right of its row (88px; 64px on phones). Rows without an image stay text only.
+- Archive: a search box (the newsletter box's inline form and navy button) above the type and tag filters. It searches titles, subtitles and summaries, and the text of free posts only; subscriber-only text is never searched.
+- End of every post: a "Share" row styled like "Filed under" (Copy link, Email; no outside scripts), then the compact signup box, which is hidden when the subscriber gate is already showing.
