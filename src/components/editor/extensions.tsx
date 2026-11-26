@@ -1,5 +1,6 @@
 "use client";
 
+import { citeParts } from "@/lib/content/cite";
 import { mergeAttributes, Node } from "@tiptap/core";
 import Blockquote from "@tiptap/extension-blockquote";
 import { TextSelection } from "@tiptap/pm/state";
@@ -11,7 +12,20 @@ import { videoThumbUrl } from "@/lib/embeds";
 const ownInputs = {
   stopEvent: ({ event }: { event: Event }) => {
     const t = event.target as HTMLElement | null;
-    return !!t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "BUTTON");
+    return !!t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "BUTTON" || !!t.closest?.("[data-cite-field]"));
+  },
+
+};
+
+/** For quotes with a source field: like ownInputs, and the field keeps its own typing and selection. */
+const quoteInputs = {
+  ...ownInputs,
+  ignoreMutation: ({ mutation }: { mutation: MutationRecord | { type: "selection"; target: globalThis.Node } }) => {
+    const t = mutation.target as HTMLElement | null;
+    const el = t && (t.nodeType === 1 ? t : t.parentElement);
+    if (el?.closest?.("[data-cite-field]")) return true;
+    if (mutation.type === "selection") return false;
+    return !el?.closest?.("[data-node-view-content-react]");
   },
 };
 
@@ -76,17 +90,76 @@ export const Paywall = Node.create({
   },
 });
 
+/* ---------- Quote source line: plain text, book titles in italics ---------- */
+const escHtml = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+/** Reads the field back as text, with italic runs marked *like this*. */
+function serializeCite(root: HTMLElement): string {
+  let out = "";
+  const walk = (n: ChildNode, italic: boolean) => {
+    if (n.nodeType === 3) {
+      const t = (n.textContent ?? "").replace(/\*/g, "").replace(/\u00a0/g, " ");
+      out += italic && t.trim() ? `*${t}*` : t;
+      return;
+    }
+    if (n.nodeType !== 1) return;
+    const el = n as HTMLElement;
+    const it = italic || el.tagName === "I" || el.tagName === "EM" || el.style?.fontStyle === "italic";
+    el.childNodes.forEach((c) => walk(c, it));
+  };
+  root.childNodes.forEach((c) => walk(c, false));
+  // Join neighbouring italic runs and tidy spaces.
+  return out.replace(/\*\*/g, "").replace(/\s+/g, " ").trimStart();
+}
+
+/** A one-line source field. Select a book title and press Cmd/Ctrl+I to italicize it. */
+function CiteField({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || serializeCite(el) === value) return;
+    el.innerHTML = citeParts(value).map((p) => (p.italic ? `<i>${escHtml(p.text)}</i>` : escHtml(p.text))).join("");
+  }, [value]);
+  return (
+    <div contentEditable={false} className="cite-wrap">
+    <div
+      ref={ref}
+      data-cite-field
+      className="cite-input cite-field"
+      role="textbox"
+      aria-label="Source of the quotation. Select a book title and press Command I to italicize it."
+      title="Select a book title and press ⌘I to italicize it"
+      data-placeholder={placeholder}
+      contentEditable
+      suppressContentEditableWarning
+      spellCheck
+      onInput={(e) => onChange(serializeCite(e.currentTarget))}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") e.preventDefault();
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "i") {
+          e.preventDefault();
+          document.execCommand("italic");
+          onChange(serializeCite(e.currentTarget));
+        }
+        if ((e.metaKey || e.ctrlKey) && (e.key.toLowerCase() === "b" || e.key.toLowerCase() === "u")) e.preventDefault();
+      }}
+      onPaste={(e) => {
+        e.preventDefault();
+        document.execCommand("insertText", false, e.clipboardData.getData("text/plain").replace(/\s+/g, " "));
+      }}
+    />
+    </div>
+  );
+}
+
 function PullQuoteView({ node, updateAttributes }: ReactNodeViewProps) {
   return (
     <NodeViewWrapper as="blockquote" className="pull-quote">
       <NodeViewContent />
-      <input
-        className="cite-input"
-        aria-label="Source of the quotation"
-        placeholder="Source (e.g. Augustine, Confessions I.1)"
+      <CiteField
         value={(node.attrs.cite as string) ?? ""}
-        onChange={(e) => updateAttributes({ cite: e.target.value })}
-        contentEditable={false}
+        onChange={(cite) => updateAttributes({ cite })}
+        placeholder="Source (e.g. Augustine, Confessions I.1)"
       />
     </NodeViewWrapper>
   );
@@ -102,7 +175,7 @@ export const PullQuote = Node.create({
   parseHTML: () => [{ tag: "blockquote.pull-quote" }],
   renderHTML: ({ HTMLAttributes }) => ["blockquote", mergeAttributes(HTMLAttributes, { class: "pull-quote" }), 0],
   addNodeView() {
-    return ReactNodeViewRenderer(PullQuoteView, ownInputs);
+    return ReactNodeViewRenderer(PullQuoteView, quoteInputs);
   },
   addCommands() {
     return {
@@ -374,13 +447,10 @@ function BlockQuoteView({ node, updateAttributes }: ReactNodeViewProps) {
       <blockquote>
         <NodeViewContent />
       </blockquote>
-      <input
-        className="cite-input"
-        aria-label="Source of the quotation"
-        placeholder="Source (optional), e.g. Pascal, Pensées 139"
+      <CiteField
         value={(node.attrs.cite as string) ?? ""}
-        onChange={(e) => updateAttributes({ cite: e.target.value })}
-        style={{ display: "block", width: "100%", border: 0, background: "transparent" }}
+        onChange={(cite) => updateAttributes({ cite })}
+        placeholder="Source (optional), e.g. Pascal, Pensées 139"
       />
     </NodeViewWrapper>
   );
@@ -390,6 +460,6 @@ function BlockQuoteView({ node, updateAttributes }: ReactNodeViewProps) {
 export const BlockQuoteWithSource = Blockquote.extend({
   addAttributes: () => ({ cite: { default: null } }),
   addNodeView() {
-    return ReactNodeViewRenderer(BlockQuoteView, ownInputs);
+    return ReactNodeViewRenderer(BlockQuoteView, quoteInputs);
   },
 });

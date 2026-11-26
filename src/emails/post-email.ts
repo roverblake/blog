@@ -1,3 +1,4 @@
+import { citeParts } from "@/lib/content/cite";
 import { isValidVideo, videoThumbUrl, videoWatchUrl } from "@/lib/embeds";
 import { escapeHtml as e } from "@/lib/email";
 import type { BlockNode, Doc, InlineNode } from "@/lib/content/types";
@@ -53,11 +54,11 @@ function block(b: BlockNode, notes: string[], base: string): string {
     case "blockquote":
       return `<div style="margin:8px 0 22px;"><div style="font-style:italic;font-size:20px;line-height:1.45;color:${S.ink};">${(b.content ?? [])
         .map((c) => (c.type === "paragraph" ? `<p style="margin:0 0 10px;">${inline(c.content, notes, base)}</p>` : block(c, notes, base)))
-        .join("")}</div>${b.attrs?.cite ? `<div style="font-size:15px;color:${S.slate};">${e(b.attrs.cite)}</div>` : ""}</div>`;
+        .join("")}</div>${b.attrs?.cite ? `<div style="font-size:15px;color:${S.slate};">${citeHtml(b.attrs.cite)}</div>` : ""}</div>`;
     case "pullQuote":
       return `<div style="margin:12px 0 24px;padding:18px 0;border-top:1px solid ${S.ink};border-bottom:1px solid ${S.ink};text-align:center;font-style:italic;font-size:22px;line-height:1.45;color:${S.ink};">${(b.content ?? [])
         .map((c) => `<p style="margin:0;">${inline(c.content, notes, base)}</p>`)
-        .join("")}${b.attrs?.cite ? `<div style="margin-top:8px;font-style:normal;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;color:${S.slate};">${e(b.attrs.cite)}</div>` : ""}</div>`;
+        .join("")}${b.attrs?.cite ? `<div style="margin-top:8px;font-style:normal;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;color:${S.slate};">${citeHtml(b.attrs.cite)}</div>` : ""}</div>`;
     case "bulletList":
     case "orderedList": {
       const tag = b.type === "bulletList" ? "ul" : "ol";
@@ -153,4 +154,10 @@ ${opts.headerImage ? `<div style="margin-bottom:24px;"><img src="${e(opts.header
   ].join("\n");
 
   return { html: emailShell(header + body + footnotes + button, footer), text: textBody };
+}
+
+/** Source line with book titles in italics. */
+function citeHtml(s: string) {
+  const esc = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return citeParts(s).map((p) => (p.italic ? `<em>${esc(p.text)}</em>` : esc(p.text))).join("");
 }

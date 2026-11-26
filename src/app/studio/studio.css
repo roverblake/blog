@@ -118,3 +118,7 @@
 .studio .ProseMirror .link-ref-edit input.link-ref-site { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--color-slate); }
 .studio .ProseMirror .link-ref-edit input::placeholder { color: #b9b4ab; }
 .studio .ProseMirror .link-ref-edit.ProseMirror-selectednode { outline: 2px solid rgba(31,58,104,.35); outline-offset: 4px; }
+/* Quote source line (editable, book titles in italics) */
+.studio .ProseMirror .cite-field { display: block; width: 100%; min-height: 1.4em; outline: none; cursor: text; white-space: pre-wrap; }
+.studio .ProseMirror .cite-field:empty::before { content: attr(data-placeholder); color: #b9b4ab; pointer-events: none; }
+.studio .ProseMirror .cite-field i, .studio .ProseMirror .cite-field em { font-style: italic; }

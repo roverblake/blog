@@ -10,6 +10,8 @@ const WIDTHS = [640, 1280, 2100];
 const MAX_BYTES = 25 * 1024 * 1024;
 
 export async function saveUpload(file: File, alt?: string) {
+  if (/hei[cf]/i.test(file.type) || /\.hei[cf]$/i.test(file.name))
+    throw new Error("This is an iPhone HEIC photo. Please save it as a JPEG first (in Photos: File → Export), then upload it.");
   if (!file.type.startsWith("image/")) throw new Error("Only images can be uploaded.");
   if (file.size > MAX_BYTES) throw new Error("That image is over 25 MB. Please use a smaller one.");
   const input = Buffer.from(await file.arrayBuffer());

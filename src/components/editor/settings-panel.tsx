@@ -162,7 +162,7 @@ export function SettingsPanel({ id, title, status, initial, onTypeChange }: { id
           }}
         >
           {uploading ? "Uploading…" : imgSrc ? "Replace image (drop or click)" : "Drop an image or click to upload"}
-          <input type="file" accept="image/*" className="sr-only" onChange={(e) => e.target.files?.[0] && onImage(e.target.files[0])} />
+          <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" onChange={(e) => e.target.files?.[0] && onImage(e.target.files[0])} />
         </label>
         {imgSrc && (
           <>

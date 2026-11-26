@@ -3,13 +3,13 @@ import Link from "next/link";
 import { PageShell } from "@/components/site/page-shell";
 import { PostRows } from "@/components/site/post-rows";
 import { yearMonth } from "@/lib/dates";
-import { listAllTags, listPosts, type PostListItem, type PostType } from "@/lib/posts";
+import { listAllTags, listPosts, POST_TYPES, type PostListItem, type PostType } from "@/lib/posts";
 import { TYPE_PLURAL } from "@/lib/urls";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Archive", alternates: { canonical: "/archive" } };
+export const metadata: Metadata = { title: "Posts", alternates: { canonical: "/posts" } };
 
-const TYPES: PostType[] = ["essay", "commonplace", "parish_letter"];
+const TYPES: PostType[] = [...POST_TYPES];
 
 type Search = Promise<{ type?: string; tag?: string; q?: string }>;
 
@@ -32,7 +32,7 @@ function filterHref(type?: string, tag?: string, search?: string) {
   if (type) q.set("type", type);
   if (tag) q.set("tag", tag);
   const s = q.toString();
-  return s ? `/archive?${s}` : "/archive";
+  return s ? `/posts?${s}` : "/posts";
 }
 
 export default async function ArchivePage({ searchParams }: { searchParams: Search }) {
@@ -40,7 +40,10 @@ export default async function ArchivePage({ searchParams }: { searchParams: Sear
   const type = TYPES.includes(sp.type as PostType) ? (sp.type as PostType) : undefined;
   const tag = sp.tag || undefined;
   const search = sp.q?.trim().slice(0, 100) || undefined;
-  const [items, tags] = await Promise.all([listPosts({ type, tagSlug: tag, search, limit: 2000 }), listAllTags()]);
+  const [all, tags] = await Promise.all([listPosts({ type: TYPES, tagSlug: tag, search, limit: 2000 }), listAllTags()]);
+  const items = type ? all.filter((p) => p.type === type) : all;
+  // Only offer a type once there is writing of that type.
+  const shownTypes = TYPES.filter((t) => t === type || all.some((p) => p.type === t));
   const months = group(items);
 
   const tab = (active: boolean) =>
@@ -50,16 +53,16 @@ export default async function ArchivePage({ searchParams }: { searchParams: Sear
     <PageShell>
       <div className="flex flex-col gap-7">
         <div className="section-label">
-          <h1>Archive</h1>
+          <h1>Posts</h1>
         </div>
-        <form role="search" action="/archive" className="max-w-reading">
-          <label htmlFor="archive-q" className="sr-only">Search the archive</label>
+        <form role="search" action="/posts" className="max-w-reading">
+          <label htmlFor="archive-q" className="sr-only">Search posts</label>
           <input
             id="archive-q"
             name="q"
             type="search"
             defaultValue={search ?? ""}
-            placeholder="Search the archive…"
+            placeholder="Search…"
             className="w-full border-0 border-b border-rule bg-transparent py-2 text-[19px] outline-none placeholder:text-slate placeholder:italic focus:border-ink"
           />
           {type && <input type="hidden" name="type" value={type} />}
@@ -71,7 +74,7 @@ export default async function ArchivePage({ searchParams }: { searchParams: Sear
             <Link href={filterHref(undefined, tag, search)} className={tab(!type)} aria-current={!type ? "page" : undefined}>
               All
             </Link>
-            {TYPES.map((t) => (
+            {shownTypes.length > 1 && shownTypes.map((t) => (
               <Link key={t} href={filterHref(t, tag, search)} className={tab(type === t)} aria-current={type === t ? "page" : undefined}>
                 {TYPE_PLURAL[t]}
               </Link>

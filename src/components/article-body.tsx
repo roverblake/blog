@@ -2,6 +2,7 @@
  * Renders a stored TipTap document as the public article body (server only).
  * Pass a document that has already been through gateDoc().
  */
+import { CiteText } from "@/components/cite-text";
 import { Fragment, type ReactNode } from "react";
 import type { BlockNode, Doc, InlineNode, Mark, Paragraph, TextNode } from "@/lib/content/types";
 import { safeHref } from "@/lib/urls";
@@ -140,7 +141,7 @@ function renderBlock(b: BlockNode, i: number, ctx: Ctx): ReactNode {
       return (
         <figure key={i} className="block-quote">
           <blockquote>{(b.content ?? []).map((c, j) => renderBlock(c, j, ctx))}</blockquote>
-          {b.attrs?.cite ? <figcaption>{b.attrs.cite}</figcaption> : null}
+          {b.attrs?.cite ? <figcaption><CiteText value={b.attrs.cite} /></figcaption> : null}
         </figure>
       );
     case "pullQuote":
@@ -149,7 +150,7 @@ function renderBlock(b: BlockNode, i: number, ctx: Ctx): ReactNode {
           {(b.content ?? []).map((c, j) => (
             <p key={j}>{renderInline(c.content, ctx)}</p>
           ))}
-          {b.attrs?.cite ? <cite>{b.attrs.cite}</cite> : null}
+          {b.attrs?.cite ? <cite><CiteText value={b.attrs.cite} /></cite> : null}
         </blockquote>
       );
     case "bulletList":

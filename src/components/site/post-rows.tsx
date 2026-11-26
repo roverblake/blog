@@ -1,3 +1,4 @@
+import { CiteText } from "@/components/cite-text";
 import Link from "next/link";
 import { monthDay, shortDate } from "@/lib/dates";
 import { withShortQuotes, withThumbs, type PostListItem } from "@/lib/posts";
@@ -32,7 +33,7 @@ export async function PostRows({ items, withYear = false, showType = true }: { i
                 {p.quote ? (
                   <>
                     <span className="font-caslon text-[21px] leading-[1.4] whitespace-pre-line italic">“{p.quote.replace(/^[“"]|[”"]$/g, "")}”</span>
-                    {p.cite && <span className="text-[16px] text-slate">{p.cite}</span>}
+                    {p.cite && <span className="text-[16px] text-slate"><CiteText value={p.cite} /></span>}
                   </>
                 ) : (
                   <>

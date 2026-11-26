@@ -37,7 +37,7 @@ export default async function SectionIndex({ params }: { params: Params }) {
         <section aria-labelledby="index-heading">
           <div className="section-label">
             <h1 id="index-heading">{TYPE_PLURAL[type]}</h1>
-            <Link href="/archive">Archive…</Link>
+            <Link href="/posts">All posts</Link>
           </div>
           {isNotes ? (
             <NoteStream notes={notes.map((n) => viewablePost(n, viewer?.hasAccess ?? false)) as never} />

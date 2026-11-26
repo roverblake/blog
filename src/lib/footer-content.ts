@@ -7,8 +7,7 @@ export type FooterContent = { columns: FooterColumn[]; credit: string };
 
 export const DEFAULT_FOOTER: FooterContent = {
   columns: [
-    { heading: "Read", links: [{ label: "Essays", href: "/essays" }, { label: "Notes", href: "/notes" }, { label: "Archive", href: "/archive" }] },
-    { heading: "Parish", links: [{ label: "Letters", href: "/letters" }, { label: "Sermons", href: "/sermons" }] },
+    { heading: "Read", links: [{ label: "Posts", href: "/posts" }, { label: "Notes", href: "/notes" }] },
     { heading: "About", links: [{ label: "About Blake", href: "/about" }, { label: "Subscribe", href: "/subscribe" }, { label: "Privacy", href: "/privacy" }] },
   ],
   credit: "Scripture quotations from the ESV® Bible · esv.org",
@@ -33,6 +32,7 @@ function renameCommonplace(col: FooterColumn): FooterColumn {
   return {
     ...col,
     links: (col.links ?? []).map((l) => {
+      if (l.href === "/archive") return { label: /^archive$/i.test(l.label.trim()) ? "Posts" : l.label, href: "/posts" };
       if (!l.href?.startsWith("/commonplace")) return l;
       return {
         label: /^commonplace$/i.test(l.label.trim()) ? "Notes" : l.label,

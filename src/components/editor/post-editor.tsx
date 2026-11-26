@@ -41,7 +41,7 @@ type SaveState = "saved" | "dirty" | "saving" | "error";
 function pickImage(editor: Editor, onError: (m: string) => void) {
   const input = document.createElement("input");
   input.type = "file";
-  input.accept = "image/*";
+  input.accept = "image/jpeg,image/png,image/webp,image/gif";
   input.onchange = async () => {
     const file = input.files?.[0];
     if (file) await uploadAndInsert(editor, file, undefined, onError);
@@ -636,7 +636,7 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
                 value={title}
                 onChange={(e) => { setTitle(e.target.value); setSaveState("dirty"); }}
                 placeholder="Title"
-                className="field-sizing-content w-full resize-none border-0 bg-transparent font-display text-[40px] leading-[1.1] outline-none placeholder:text-[#b9b4ab] sm:text-[48px]"
+                className="field-sizing-content w-full resize-none border-0 bg-transparent font-display text-[40px] leading-[1.2] pb-[0.1em] outline-none overflow-visible placeholder:text-[#b9b4ab] sm:text-[48px]"
               />
               <label htmlFor="subtitle" className="sr-only">Subtitle</label>
               <textarea

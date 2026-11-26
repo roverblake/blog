@@ -179,3 +179,12 @@ In the editor, More → From my site lists recent writing. A post goes in as a l
 
 ### Amendment: fewer lines (Nov 26, 2026)
 Lines are kept only where they separate sections. Removed: the rule under the compact header, the second rule inside the footer, the rule after the last row of any list, and the rules between "More to read" items. Remaining rules: section labels, between rows, link previews, and the top of the footer.
+
+### Amendment: simpler menu and calmer home page (Nov 26, 2026)
+- The top menu has three items: Posts, Notes, About (wider spacing between them).
+- Posts (/posts) replaces the Archive: search, type filters (All, then only the types that have writing), tags, and posts grouped by month. Notes are not listed there. /archive redirects to /posts.
+- Home: the lead post, then "Posts" (four latest, "All posts" link), then "Notes" (two latest, "All notes" link), then the signup box. Space between sections is doubled (80px, 96px on wide screens).
+- The default footer has two link columns: Read (Posts, Notes) and About (About Blake, Subscribe, Privacy). Saved footer links to /archive now show as Posts.
+
+### Amendment: italic book titles in quote sources (Nov 26, 2026)
+In a quote's source line, select a book title and press ⌘I (Ctrl+I on Windows) to italicize it, e.g. "C.S. Lewis, *The Screwtape Letters*". The rest of the source line stays roman. Works in block quotes and pull quotes, on the site and in emails.
