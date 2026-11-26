@@ -21,6 +21,8 @@ export function docToMarkdown(doc: Doc, mapImage: (src: string) => string = (s) 
         for (const m of n.marks ?? []) {
           if (m.type === "bold") t = `**${t}**`;
           else if (m.type === "italic") t = `*${t}*`;
+          else if (m.type === "strike") t = `~~${t}~~`;
+          else if (m.type === "code") t = `\`${t}\``;
           else if (m.type === "link") t = `[${t}](${m.attrs.href})`;
         }
         return t;
@@ -32,7 +34,7 @@ export function docToMarkdown(doc: Doc, mapImage: (src: string) => string = (s) 
       case "paragraph":
         return prefix + inline(b.content);
       case "heading":
-        return `## ${inline(b.content)}`;
+        return `${b.attrs?.level === 3 ? "###" : "##"} ${inline(b.content)}`;
       case "blockquote":
       case "pullQuote": {
         const inner = (b.content ?? []).map((c) => block(c as BlockNode)).join("\n\n");

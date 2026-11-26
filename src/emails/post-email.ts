@@ -30,6 +30,9 @@ function inline(nodes: InlineNode[] | undefined, notes: string[], base: string):
       for (const m of n.marks ?? []) {
         if (m.type === "bold") html = `<strong>${html}</strong>`;
         else if (m.type === "italic") html = `<em>${html}</em>`;
+        else if (m.type === "strike") html = `<s>${html}</s>`;
+        else if (m.type === "underline") html = `<u>${html}</u>`;
+        else if (m.type === "code") html = `<code style="font-family:Menlo,Consolas,monospace;font-size:0.88em;">${html}</code>`;
         else if (m.type === "link") {
           const href = safeHref(m.attrs.href);
           if (href) html = `<a href="${e(abs(href, base))}" style="color:${S.ink};text-decoration:underline;">${html}</a>`;

@@ -74,3 +74,26 @@
 .studio .ProseMirror .footnote-ref { counter-increment: footnote; }
 .studio .ProseMirror .footnote-ref::before { content: counter(footnote); }
 }
+
+/* Editor chrome: quiet, Substack-like buttons (sentence case, sans, rounded) */
+.studio .editor-chrome, .studio .editor-chrome select {
+  font-family: ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
+}
+.studio .editor-chrome .s-btn {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-family: ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #3d3a35;
+}
+.studio .editor-chrome .s-btn:hover { background: #efede8; }
+.studio .editor-chrome .s-btn[aria-expanded="true"] { background: #e6e3dc; }
+.studio .editor-chrome .s-btn-primary { background: var(--color-ink); border-color: var(--color-ink); color: #fff; padding: 0 16px; }
+.studio .editor-chrome .s-btn-primary:hover { background: #000; color: #fff; }
+.studio .editor-chrome .s-btn-danger { color: #8a2a22; }
+.studio .editor-chrome .s-badge { font-family: inherit; font-size: 12px; letter-spacing: 0.04em; border-radius: 4px; }

@@ -5,6 +5,9 @@
 export type Mark =
   | { type: "bold" }
   | { type: "italic" }
+  | { type: "strike" }
+  | { type: "underline" }
+  | { type: "code" }
   | { type: "link"; attrs: { href: string } };
 
 export type TextNode = { type: "text"; text: string; marks?: Mark[] };

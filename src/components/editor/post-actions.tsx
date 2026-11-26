@@ -65,7 +65,7 @@ export function PostActions({
             disabled={pending}
             onClick={() => confirm("Publish this post on the site now? If email lists are ticked, it will also be emailed.") && run(() => publishNow(id))}
           >
-            Publish now
+            Publish
           </button>
         </>
       )}

@@ -16,6 +16,9 @@ function applyMarks(text: ReactNode, marks: Mark[] | undefined, key: string): Re
   for (const m of marks ?? []) {
     if (m.type === "bold") out = <strong key={key + "b"}>{out}</strong>;
     else if (m.type === "italic") out = <em key={key + "i"}>{out}</em>;
+    else if (m.type === "strike") out = <s key={key + "s"}>{out}</s>;
+    else if (m.type === "underline") out = <u key={key + "u"}>{out}</u>;
+    else if (m.type === "code") out = <code key={key + "c"}>{out}</code>;
     else if (m.type === "link") {
       const href = safeHref(m.attrs.href);
       if (href) {
@@ -130,7 +133,7 @@ function renderBlock(b: BlockNode, i: number, ctx: Ctx): ReactNode {
     case "paragraph":
       return <p key={i}>{renderInline(b.content, ctx)}</p>;
     case "heading":
-      return <h2 key={i}>{renderInline(b.content, ctx)}</h2>;
+      return b.attrs?.level === 3 ? <h3 key={i}>{renderInline(b.content, ctx)}</h3> : <h2 key={i}>{renderInline(b.content, ctx)}</h2>;
     case "blockquote":
       return (
         <figure key={i} className="block-quote">

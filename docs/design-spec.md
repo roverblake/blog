@@ -122,3 +122,7 @@ At Blake's request the home page newsletter box is smaller and quieter: no warm-
 ### Nov 25, 2026: no date line; fleur-de-lis rule under the masthead
 
 At Blake's request the date line above the name is removed. The full-width rule under the masthead is replaced by a centered 1px ink rule, at most 560px wide, with a small fleur-de-lis (18px, ink) at each end.
+
+### Nov 25, 2026: links line, softer rules, light footer, new text styles
+
+At Blake's request: a single line of small-capital links (Essays, Commonplace, Letters, Sermons, Archive, About) in slate, 13px, sits under the fleur-de-lis rule. Section labels ("The Latest") now use a 1px rule-grey line, so the fleur rule is the only black line. The footer is white with a thin rule-grey line on top, ink and slate text. Posts may now use a "Heading" (h3: Caslon Display 26px, ink), strikethrough, underline and inline code, alongside the existing small-capital section label (h2).

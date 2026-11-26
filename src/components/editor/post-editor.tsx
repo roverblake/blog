@@ -15,6 +15,7 @@ import { PostActions } from "./post-actions";
 import { SettingsPanel, type SettingsInitial } from "./settings-panel";
 import { createSlash, type SlashBridge, type SlashItem } from "./slash";
 import { GrammarPanel } from "./grammar-panel";
+import { Icon } from "./icons";
 
 export type EditorInitial = {
   id: string;
@@ -61,7 +62,8 @@ function slashItems(onError: (m: string) => void): SlashItem[] {
   const del = (e: Editor, r: Range) => e.chain().focus().deleteRange(r);
   return [
     { title: "Paragraph", hint: "Plain text", run: (e, r) => del(e, r).setParagraph().run() },
-    { title: "Section heading", hint: "Small capitals", run: (e, r) => del(e, r).setHeading({ level: 2 }).run() },
+    { title: "Heading", hint: "Large", run: (e, r) => del(e, r).setHeading({ level: 3 }).run() },
+    { title: "Section label", hint: "Small capitals", run: (e, r) => del(e, r).setHeading({ level: 2 }).run() },
     { title: "Block quote", hint: "Commonplace style", run: (e, r) => del(e, r).toggleBlockquote().run() },
     { title: "Pull quote", hint: "Centered between rules", run: (e, r) => del(e, r).setPullQuote().run() },
     { title: "Bulleted list", hint: "• • •", run: (e, r) => del(e, r).toggleBulletList().run() },
@@ -91,6 +93,8 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
   const [linkOpen, setLinkOpen] = useState(false);
   const [linkValue, setLinkValue] = useState("");
   const [grammarOpen, setGrammarOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const [slash, setSlash] = useState<{ items: SlashItem[]; rect: DOMRect | null; index: number; command: (i: SlashItem) => void } | null>(null);
   const slashRef = useRef(slash);
   slashRef.current = slash;
@@ -117,11 +121,8 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
   const extensions = useMemo(
     () => [
       StarterKit.configure({
-        heading: { levels: [2] },
-        code: false,
+        heading: { levels: [2, 3] },
         codeBlock: false,
-        strike: false,
-        underline: false,
         blockquote: false,
         link: { openOnClick: false, autolink: true, defaultProtocol: "https" },
       }),
@@ -152,6 +153,14 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
         images.forEach((f) => editorRef.current && uploadAndInsert(editorRef.current, f, pos, onError));
         return true;
       },
+      handleKeyDown: (_view, event) => {
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+          event.preventDefault();
+          openLinkRef.current();
+          return true;
+        }
+        return false;
+      },
       handlePaste: (_view, event) => {
         const images = [...(event.clipboardData?.files ?? [])].filter((f) => f.type.startsWith("image/"));
         if (!images.length) return false;
@@ -172,6 +181,12 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
         ? {
             bold: e.isActive("bold"),
             italic: e.isActive("italic"),
+            underline: e.isActive("underline"),
+            strike: e.isActive("strike"),
+            code: e.isActive("code"),
+            style: e.isActive("heading", { level: 3 }) ? "h3" : e.isActive("heading", { level: 2 }) ? "h2" : "p",
+            canUndo: e.can().undo(),
+            canRedo: e.can().redo(),
             link: e.isActive("link"),
             heading: e.isActive("heading"),
             blockquote: e.isActive("blockquote"),
@@ -224,6 +239,8 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
     setLinkValue((editor.getAttributes("link").href as string) ?? "");
     setLinkOpen(true);
   };
+  const openLinkRef = useRef(openLink);
+  openLinkRef.current = openLink;
   const applyLink = () => {
     if (!editor) return;
     const href = linkValue.trim();
@@ -233,25 +250,36 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
   };
 
   const words = st?.words ?? 0;
-  const tb = "inline-flex min-h-9 min-w-9 items-center justify-center px-2 text-[15px] hover:bg-[#efede8] aria-pressed:bg-ink aria-pressed:text-white";
+  const tb =
+    "inline-flex h-9 min-w-9 items-center justify-center rounded px-2 text-[15px] text-[#3d3a35] hover:bg-[#efede8] disabled:opacity-35 aria-pressed:bg-[#e6e3dc] aria-pressed:text-ink";
+  const sep = <span aria-hidden="true" className="mx-1 h-5 w-px bg-rule" />;
+  const run = (fn: (e: Editor) => void) => () => editor && fn(editor);
+  const insertFootnote = (e: Editor) => e.chain().focus().setTextSelection(e.state.selection.to).insertFootnote("").run();
+  const drawerOpen = settingsOpen || grammarOpen;
 
   return (
-    <div className="flex min-h-[calc(100vh-49px)] flex-col">
-      {/* Top bar */}
-      <div className="sticky top-0 z-30 border-b border-rule bg-white">
-        <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-2">
+    <div className="flex min-h-[calc(100vh-49px)] flex-col bg-white">
+      {/* Top bar: back, save state, word count | spelling, settings, preview, publish */}
+      <div className="editor-chrome sticky top-0 z-30 bg-white">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-rule px-5 py-2">
           <div className="flex flex-wrap items-center gap-4">
-            <Link href="/studio" className="text-[16px] text-slate italic">
+            <Link href="/studio" className="text-[16px] text-slate">
               ← Posts
             </Link>
             <span className={`s-badge s-badge-${initial.status}`}>{initial.status === "scheduled" ? `Scheduled · ${initial.publishAtLabel}` : initial.status}</span>
             <span role="status" aria-live="polite" className={`text-[15px] ${saveState === "error" ? "text-[#8a2a22]" : "text-slate"}`}>
               {saveLabel}
             </span>
+            <span className="hidden text-[15px] text-slate sm:inline">
+              {words.toLocaleString()} words · {readingMinutes(words)} min read
+            </span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <button type="button" className="s-btn" onClick={() => setGrammarOpen((o) => !o)} aria-expanded={grammarOpen}>
-              Check spelling &amp; grammar
+            <button type="button" className="s-btn" onClick={() => { setGrammarOpen((o) => !o); setSettingsOpen(false); }} aria-expanded={grammarOpen}>
+              Spelling &amp; grammar
+            </button>
+            <button type="button" className="s-btn" onClick={() => { setSettingsOpen((o) => !o); setGrammarOpen(false); }} aria-expanded={settingsOpen}>
+              Settings
             </button>
             <PostActions
               id={initial.id}
@@ -265,36 +293,79 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
           </div>
         </div>
 
-        {/* Formatting toolbar */}
-        <div role="toolbar" aria-label="Formatting" className="flex flex-wrap items-center gap-1 border-t border-rule px-6 py-1.5">
-          <label htmlFor="pstyle" className="sr-only">
-            Paragraph style
-          </label>
-          <select
-            id="pstyle"
-            className="s-select mr-2 w-auto"
-            value={st?.heading ? "h2" : "p"}
-            onChange={(e) =>
-              e.target.value === "h2" ? editor?.chain().focus().setHeading({ level: 2 }).run() : editor?.chain().focus().setParagraph().run()
-            }
+        {/* Formatting toolbar, centered like Substack's */}
+        <div className="border-b border-rule">
+          <div
+            role="toolbar"
+            aria-label="Formatting"
+            className="mx-auto flex max-w-[900px] flex-wrap items-center justify-center gap-0.5 px-4 py-1.5"
+            // Keep the cursor in the text when a button is clicked (as Substack does).
+            onMouseDown={(ev) => { if (!(ev.target as HTMLElement).closest("select")) ev.preventDefault(); }}
           >
-            <option value="p">Paragraph</option>
-            <option value="h2">Section heading</option>
-          </select>
-          <button type="button" className={`${tb} font-bold`} aria-label="Bold" aria-pressed={!!st?.bold} onClick={() => editor?.chain().focus().toggleBold().run()}>B</button>
-          <button type="button" className={`${tb} italic`} aria-label="Italic" aria-pressed={!!st?.italic} onClick={() => editor?.chain().focus().toggleItalic().run()}>I</button>
-          <button type="button" className={tb} aria-pressed={!!st?.link} onClick={openLink}>Link</button>
-          <button type="button" className={tb} aria-label="Block quote" aria-pressed={!!st?.blockquote} onClick={() => editor?.chain().focus().toggleBlockquote().run()}>“ ”</button>
-          <button type="button" className={tb} aria-pressed={!!st?.pullQuote} onClick={() => editor?.chain().focus().setPullQuote().run()}>Pull quote</button>
-          <button type="button" className={tb} aria-label="Bulleted list" aria-pressed={!!st?.bullet} onClick={() => editor?.chain().focus().toggleBulletList().run()}>• List</button>
-          <button type="button" className={tb} aria-label="Numbered list" aria-pressed={!!st?.ordered} onClick={() => editor?.chain().focus().toggleOrderedList().run()}>1. List</button>
-          <button type="button" className={tb} aria-label="Divider" onClick={() => editor?.chain().focus().setHorizontalRule().run()}>· · ·</button>
-          <button type="button" className={tb} onClick={() => editor && pickImage(editor, onError)}>Image</button>
-          <button type="button" className={tb} onClick={() => editor?.chain().focus().setTextSelection(editor.state.selection.to).insertFootnote("").run()}>Footnote</button>
-          <button type="button" className={`${tb} text-navy`} onClick={() => editor?.chain().focus().setPaywall().run()}>Paywall line</button>
+            <button type="button" className={tb} aria-label="Undo" title="Undo (⌘Z)" disabled={!st?.canUndo} onClick={run((e) => e.chain().focus().undo().run())}><Icon name="undo" /></button>
+            <button type="button" className={tb} aria-label="Redo" title="Redo (⌘⇧Z)" disabled={!st?.canRedo} onClick={run((e) => e.chain().focus().redo().run())}><Icon name="redo" /></button>
+            {sep}
+            <label htmlFor="pstyle" className="sr-only">Text style</label>
+            <select
+              id="pstyle"
+              className="h-9 w-[140px] rounded border-0 bg-transparent px-2 text-[15px] hover:bg-[#efede8]"
+              value={st?.style ?? "p"}
+              onChange={(ev) => {
+                const v = ev.target.value;
+                const c = editor?.chain().focus();
+                if (v === "h3") c?.setHeading({ level: 3 }).run();
+                else if (v === "h2") c?.setHeading({ level: 2 }).run();
+                else c?.setParagraph().run();
+              }}
+            >
+              <option value="p">Normal text</option>
+              <option value="h3">Heading</option>
+              <option value="h2">Section label</option>
+            </select>
+            {sep}
+            <button type="button" className={tb} aria-label="Bold" title="Bold (⌘B)" aria-pressed={!!st?.bold} onClick={run((e) => e.chain().focus().toggleBold().run())}><Icon name="bold" /></button>
+            <button type="button" className={tb} aria-label="Italic" title="Italic (⌘I)" aria-pressed={!!st?.italic} onClick={run((e) => e.chain().focus().toggleItalic().run())}><Icon name="italic" /></button>
+            <button type="button" className={tb} aria-label="Underline" title="Underline (⌘U)" aria-pressed={!!st?.underline} onClick={run((e) => e.chain().focus().toggleUnderline().run())}><Icon name="underline" /></button>
+            <button type="button" className={tb} aria-label="Strikethrough" title="Strikethrough (⌘⇧S)" aria-pressed={!!st?.strike} onClick={run((e) => e.chain().focus().toggleStrike().run())}><Icon name="strike" /></button>
+            <button type="button" className={tb} aria-label="Code" title="Code (⌘E)" aria-pressed={!!st?.code} onClick={run((e) => e.chain().focus().toggleCode().run())}><Icon name="code" /></button>
+            {sep}
+            <button type="button" className={tb} aria-label="Link" title="Link (⌘K)" aria-pressed={!!st?.link} onClick={openLink}><Icon name="link" /></button>
+            <button type="button" className={tb} aria-label="Image" title="Image" onClick={run((e) => pickImage(e, onError))}><Icon name="image" /></button>
+            <button type="button" className={tb} aria-label="Block quote" title="Quote" aria-pressed={!!st?.blockquote} onClick={run((e) => e.chain().focus().toggleBlockquote().run())}><Icon name="quote" /></button>
+            {sep}
+            <button type="button" className={tb} aria-label="Bulleted list" title="Bulleted list" aria-pressed={!!st?.bullet} onClick={run((e) => e.chain().focus().toggleBulletList().run())}><Icon name="bullets" /></button>
+            <button type="button" className={tb} aria-label="Numbered list" title="Numbered list" aria-pressed={!!st?.ordered} onClick={run((e) => e.chain().focus().toggleOrderedList().run())}><Icon name="numbers" /></button>
+            {sep}
+            <div className="relative">
+              <button type="button" className={`${tb} gap-1`} aria-expanded={moreOpen} aria-haspopup="menu" onClick={() => setMoreOpen((o) => !o)}>
+                <Icon name="more" /> More
+              </button>
+              {moreOpen && (
+                <div role="menu" className="absolute right-0 z-40 mt-1 w-64 border border-[#cfc9be] bg-white py-1 shadow-xl" onMouseLeave={() => setMoreOpen(false)}>
+                  {[
+                    ["Divider", "· · ·", (e: Editor) => e.chain().focus().setHorizontalRule().run()],
+                    ["Pull quote", "Centered between rules", (e: Editor) => e.chain().focus().setPullQuote().run()],
+                    ["Footnote", "Numbered note", insertFootnote],
+                    ["Paywall line", "Subscribers only below", (e: Editor) => e.chain().focus().setPaywall().run()],
+                  ].map(([label, hint, fn]) => (
+                    <button
+                      key={label as string}
+                      type="button"
+                      role="menuitem"
+                      className="flex w-full items-baseline justify-between px-3.5 py-2 text-left text-[16px] hover:bg-warm"
+                      onClick={() => { setMoreOpen(false); if (editor) (fn as (e: Editor) => void)(editor); }}
+                    >
+                      <span>{label as string}</span>
+                      <span className="text-[13px] text-slate">{hint as string}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
         {linkOpen && (
-          <div className="flex flex-wrap items-center gap-2 border-t border-rule px-6 py-2">
+          <div className="flex flex-wrap items-center justify-center gap-2 border-b border-rule px-6 py-2">
             <label htmlFor="link-url" className="text-[15px] text-slate">Link address</label>
             <input
               id="link-url"
@@ -313,64 +384,74 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
           </div>
         )}
         {notice && (
-          <div role="alert" className="flex items-center justify-between border-t border-rule bg-[#fbeeee] px-6 py-2 text-[15px]">
+          <div role="alert" className="flex items-center justify-between border-b border-rule bg-[#fbeeee] px-6 py-2 text-[15px]">
             {notice}
             <button type="button" className="s-btn" onClick={() => setNotice(null)}>Dismiss</button>
           </div>
         )}
       </div>
 
-      <div className="flex flex-1 flex-wrap items-start gap-6 px-6 pt-7 pb-12">
-        {/* Writing surface, styled like the public post */}
-        <main className="min-w-0 flex-[999_1_560px] border border-rule bg-white px-6 py-12 sm:px-16">
-          <div className="mx-auto max-w-reading">
-            <div className="mb-8 flex flex-col items-center gap-3 border-b border-rule pb-6 text-center">
-              <label htmlFor="title" className="sr-only">Title</label>
-              <textarea
-                id="title"
-                ref={autoGrow}
-                onInput={(e) => autoGrow(e.currentTarget)}
-                rows={1}
-                value={title}
-                onChange={(e) => { setTitle(e.target.value); setSaveState("dirty"); }}
-                placeholder="Title"
-                className="field-sizing-content w-full resize-none border-0 bg-transparent text-center font-display text-[44px] leading-[1.05] outline-none sm:text-[56px]"
-              />
-              <label htmlFor="subtitle" className="sr-only">Subtitle</label>
-              <textarea
-                id="subtitle"
-                ref={autoGrow}
-                onInput={(e) => autoGrow(e.currentTarget)}
-                rows={1}
-                value={subtitle}
-                onChange={(e) => { setSubtitle(e.target.value); setSaveState("dirty"); }}
-                placeholder="Subtitle"
-                className="field-sizing-content w-full resize-none border-0 bg-transparent text-center text-[22px] leading-[1.4] text-subtle italic outline-none sm:text-[24px]"
-              />
-            </div>
+      {/* Writing surface: one clean centered column */}
+      <main className="flex-1 px-6 pt-12 pb-32">
+        <div className="mx-auto max-w-reading">
+          <label htmlFor="title" className="sr-only">Title</label>
+          <textarea
+            id="title"
+            ref={autoGrow}
+            onInput={(e) => autoGrow(e.currentTarget)}
+            rows={1}
+            value={title}
+            onChange={(e) => { setTitle(e.target.value); setSaveState("dirty"); }}
+            placeholder="Title"
+            className="field-sizing-content w-full resize-none border-0 bg-transparent font-display text-[40px] leading-[1.1] outline-none placeholder:text-[#b9b4ab] sm:text-[48px]"
+          />
+          <label htmlFor="subtitle" className="sr-only">Subtitle</label>
+          <textarea
+            id="subtitle"
+            ref={autoGrow}
+            onInput={(e) => autoGrow(e.currentTarget)}
+            rows={1}
+            value={subtitle}
+            onChange={(e) => { setSubtitle(e.target.value); setSaveState("dirty"); }}
+            placeholder="Add a subtitle…"
+            className="field-sizing-content mt-2 w-full resize-none border-0 bg-transparent text-[22px] leading-[1.4] text-subtle outline-none placeholder:text-[#b9b4ab]"
+          />
+          <div className="mt-8">
             <EditorContent editor={editor} />
           </div>
-        </main>
+        </div>
+      </main>
 
-        <aside className="flex w-full flex-col gap-5 lg:w-[320px] lg:flex-none">
+      {/* Right-hand drawer for post settings and the spelling check */}
+      {(
+        <aside
+          aria-label={settingsOpen ? "Post settings" : "Spelling and grammar"}
+          hidden={!drawerOpen}
+          className="editor-chrome fixed top-0 right-0 bottom-0 z-40 flex w-full max-w-[400px] flex-col gap-4 overflow-y-auto border-l border-rule bg-[#faf9f7] p-5 shadow-2xl"
+        >
+          <div className="flex items-center justify-between">
+            <h2 className="m-0 font-display text-[24px] font-normal">{settingsOpen ? "Post settings" : "Spelling & grammar"}</h2>
+            <button type="button" className="s-btn" onClick={() => { setSettingsOpen(false); setGrammarOpen(false); }}>
+              Done
+            </button>
+          </div>
           {grammarOpen && editor && <GrammarPanel editor={editor} dictionary={initial.dictionary} onClose={() => setGrammarOpen(false)} />}
-          <SettingsPanel id={initial.id} title={title} status={initial.status} initial={initial.settings} />
-          <div className="flex justify-between px-1 text-[15px] text-slate">
-            <span>{words.toLocaleString()} words</span>
-            <span>About {readingMinutes(words)} min read</span>
+          <div className={settingsOpen ? "" : "hidden"}>
+            <SettingsPanel id={initial.id} title={title} status={initial.status} initial={initial.settings} />
           </div>
         </aside>
-      </div>
+      )}
 
       {/* Floating toolbar on text selection */}
       {editor && (
         <BubbleMenu editor={editor} shouldShow={({ editor: e, state }) => !state.selection.empty && !e.isActive("image") && !e.isActive("paywall")}>
-          <div role="toolbar" aria-label="Selection formatting" className="flex bg-ink text-white shadow-lg">
-            <button type="button" className="h-10 w-10 font-bold" aria-label="Bold" onClick={() => editor.chain().focus().toggleBold().run()}>B</button>
-            <button type="button" className="h-10 w-10 italic" aria-label="Italic" onClick={() => editor.chain().focus().toggleItalic().run()}>I</button>
-            <button type="button" className="h-10 px-3 text-[15px]" onClick={openLink}>Link</button>
-            <button type="button" className="h-10 px-3 text-[15px]" onClick={() => editor.chain().focus().toggleBlockquote().run()}>Quote</button>
-            <button type="button" className="h-10 px-3 text-[15px]" onClick={() => editor.chain().focus().setTextSelection(editor.state.selection.to).insertFootnote("").run()}>Footnote</button>
+          <div role="toolbar" aria-label="Selection formatting" className="flex rounded bg-ink text-white shadow-lg" onMouseDown={(ev) => ev.preventDefault()}>
+            <button type="button" className="h-10 w-10" aria-label="Bold" onClick={() => editor.chain().focus().toggleBold().run()}><span className="inline-flex justify-center"><Icon name="bold" /></span></button>
+            <button type="button" className="h-10 w-10" aria-label="Italic" onClick={() => editor.chain().focus().toggleItalic().run()}><span className="inline-flex justify-center"><Icon name="italic" /></span></button>
+            <button type="button" className="h-10 w-10" aria-label="Underline" onClick={() => editor.chain().focus().toggleUnderline().run()}><span className="inline-flex justify-center"><Icon name="underline" /></span></button>
+            <button type="button" className="h-10 w-10" aria-label="Link" onClick={openLink}><span className="inline-flex justify-center"><Icon name="link" /></span></button>
+            <button type="button" className="h-10 w-10" aria-label="Quote" onClick={() => editor.chain().focus().toggleBlockquote().run()}><span className="inline-flex justify-center"><Icon name="quote" /></span></button>
+            <button type="button" className="h-10 px-3 text-[15px]" onClick={() => insertFootnote(editor)}>Footnote</button>
           </div>
         </BubbleMenu>
       )}
