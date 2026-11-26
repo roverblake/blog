@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { TAGLINE } from "@/lib/site";
+import { AccountLinks } from "./account-links";
 
 const year = () => new Date().getFullYear();
 const ESV = "Scripture quotations from the ESV® Bible · esv.org";
@@ -35,7 +36,11 @@ export function SiteFooter() {
         </div>
         <div className="flex flex-wrap justify-between gap-3 border-t border-footer-rule pt-4 text-[14px] text-footer-muted">
           <span>© {year()} Blake Johnson</span>
-          <span>{ESV}</span>
+          <span className="inline-flex flex-wrap gap-3">
+            <span>{ESV}</span>
+            <span aria-hidden="true">·</span>
+            <AccountLinks />
+          </span>
         </div>
       </div>
     </footer>
@@ -54,7 +59,8 @@ export function CompactFooter() {
           © {year()} Blake Johnson · {ESV} ·{" "}
           <Link href="/privacy" className="text-footer-muted hover:text-white hover:underline">
             Privacy
-          </Link>
+          </Link>{" "}
+          · <AccountLinks />
         </span>
       </div>
     </footer>

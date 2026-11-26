@@ -3,10 +3,12 @@
 import { useActionState, useId } from "react";
 import { subscribe, type SubscribeState } from "@/app/actions/subscribe";
 
-const LISTS = [
-  { slug: "essays", name: "Essays", cadence: "Every other Monday" },
-  { slug: "parish", name: "Letters to the Parish", cadence: "Sundays" },
-] as const;
+export type FormList = { slug: "essays" | "parish"; name: string; cadence: string; checked: boolean };
+
+const FALLBACK: FormList[] = [
+  { slug: "essays", name: "Essays", cadence: "Every other Monday", checked: true },
+  { slug: "parish", name: "Letters to the Parish", cadence: "Sundays", checked: false },
+];
 
 /**
  * Subscribe form. With `showLists` it shows the two newsletter checkboxes
@@ -16,12 +18,20 @@ const LISTS = [
 export function SubscribeForm({
   showLists = true,
   defaultLists = ["essays"],
+  lists = FALLBACK,
+  buttonLabel = "Subscribe",
+  compact = false,
   className = "",
 }: {
   showLists?: boolean;
   defaultLists?: ("essays" | "parish")[];
+  lists?: FormList[];
+  buttonLabel?: string;
+  compact?: boolean;
   className?: string;
 }) {
+  // With only one choice shown, skip the checkbox and subscribe to it directly.
+  const single = showLists && lists.length === 1;
   const [state, action, pending] = useActionState<SubscribeState, FormData>(subscribe, { status: "idle" });
   const id = useId();
 
@@ -35,28 +45,42 @@ export function SubscribeForm({
 
   return (
     <form action={action} className={`flex flex-col gap-3.5 ${className}`}>
-      {showLists ? (
-        <fieldset className="m-0 flex flex-col gap-3.5 border-0 p-0">
+      {showLists && !single ? (
+        <fieldset className={`m-0 flex border-0 p-0 ${compact ? "flex-row flex-wrap gap-x-6 gap-y-1" : "flex-col gap-3.5"}`}>
           <legend className="sr-only">Newsletters</legend>
-          {LISTS.map((l) => (
-            <label key={l.slug} className="flex min-h-11 cursor-pointer items-start gap-3 text-left text-[18px] leading-[1.35]">
+          {lists.map((l) => (
+            <label
+              key={l.slug}
+              className={`flex min-h-11 cursor-pointer gap-2.5 text-left leading-[1.35] ${compact ? "items-center text-[16px]" : "items-start text-[18px]"}`}
+            >
               <input
                 type="checkbox"
                 name="lists"
                 value={l.slug}
-                defaultChecked={defaultLists.includes(l.slug)}
-                className="mt-[3px] h-5 w-5 shrink-0 accent-navy"
+                defaultChecked={l.checked}
+                className={`shrink-0 accent-navy ${compact ? "h-4 w-4" : "mt-[3px] h-5 w-5"}`}
               />
-              <span>
-                <b className="font-semibold">{l.name}</b>
-                <br />
-                <span className="text-[16px] text-slate">{l.cadence}</span>
-              </span>
+              {compact ? (
+                <span>
+                  {l.name}
+                  {l.cadence && <span className="text-slate"> · {l.cadence}</span>}
+                </span>
+              ) : (
+                <span>
+                  <b className="font-semibold">{l.name}</b>
+                  {l.cadence && (
+                    <>
+                      <br />
+                      <span className="text-[16px] text-slate">{l.cadence}</span>
+                    </>
+                  )}
+                </span>
+              )}
             </label>
           ))}
         </fieldset>
       ) : (
-        defaultLists.map((l) => <input key={l} type="hidden" name="lists" value={l} />)
+        (single ? [lists[0].slug] : defaultLists).map((l) => <input key={l} type="hidden" name="lists" value={l} />)
       )}
       {/* Honeypot for bots; hidden from people and screen readers. */}
       <div aria-hidden="true" className="hidden">
@@ -64,13 +88,13 @@ export function SubscribeForm({
           Website <input type="text" name="website" tabIndex={-1} autoComplete="off" />
         </label>
       </div>
-      <div className="inline-form">
+      <div className={`inline-form ${compact ? "inline-form-sm" : ""}`}>
         <label htmlFor={`${id}-email`} className="sr-only">
           Email address
         </label>
         <input id={`${id}-email`} name="email" type="email" required autoComplete="email" placeholder="Your email address" />
         <button type="submit" className="btn-primary" disabled={pending}>
-          {pending ? "Sending…" : "Subscribe"}
+          {pending ? "Sending…" : buttonLabel}
         </button>
       </div>
       {state.status === "error" && (

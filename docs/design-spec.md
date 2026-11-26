@@ -114,3 +114,7 @@ At Blake's request, the black top strip (section line, Sign in, Subscribe) is re
 ### Nov 25, 2026: menu bar removed, simple blog look
 
 At Blake's request ("simple blog like look for now"), the ruled menu bar under the masthead and the menu on post pages are removed. The header is the date line, the name and the tagline over a single rule. Sections stay reachable from the footer and the "More…" links.
+
+### Nov 25, 2026: quieter signup box, editable wording, footer sign-in
+
+At Blake's request the home page newsletter box is smaller and quieter: no warm-grey panel, just thin rules above and below, a 24–26px heading, 17px description, the choices on one line, and a slimmer email field. The label, heading, description, button wording and the newsletter choices (name, how often, shown or hidden, ticked by default) are edited in Studio → Settings → Signup box. A small "Sign in" link (or "Studio · Sign out" when signed in) sits in the footer's bottom line.

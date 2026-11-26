@@ -4,7 +4,7 @@ import type { JSONContent } from "@tiptap/core";
 import { useState, useTransition } from "react";
 import { removeDictionaryWord } from "@/app/studio/actions";
 import { SimpleEditor } from "@/components/editor/simple-editor";
-import { saveAbout, saveMailingAddress } from "./actions";
+import { saveAbout, saveMailingAddress, saveNewsletterBox } from "./actions";
 
 export function MailingAddressForm({ initial }: { initial: string }) {
   const [value, setValue] = useState(initial);
@@ -50,5 +50,81 @@ export function DictionaryList({ words }: { words: string[] }) {
         </li>
       ))}
     </ul>
+  );
+}
+
+type Copy = { label: string; heading: string; body: string; button: string };
+type Option = { slug: "essays" | "parish"; name: string; cadence: string; show: boolean; checked: boolean };
+
+export function NewsletterBoxForm({ initialCopy, initialOptions }: { initialCopy: Copy; initialOptions: Option[] }) {
+  const [copy, setCopy] = useState(initialCopy);
+  const [options, setOptions] = useState(initialOptions);
+  const [msg, setMsg] = useState("");
+  const [pending, start] = useTransition();
+  const edit = (k: keyof Copy, v: string) => { setCopy((c) => ({ ...c, [k]: v })); setMsg(""); };
+  const editOpt = (i: number, patch: Partial<Option>) => {
+    setOptions((list) => list.map((o, j) => (j === i ? { ...o, ...patch } : o)));
+    setMsg("");
+  };
+  const field = (k: keyof Copy, label: string, multiline = false) => (
+    <div className="flex flex-col gap-1">
+      <label htmlFor={`nl-${k}`} className="s-label">{label}</label>
+      {multiline ? (
+        <textarea id={`nl-${k}`} className="s-textarea" rows={2} value={copy[k]} onChange={(e) => edit(k, e.target.value)} />
+      ) : (
+        <input id={`nl-${k}`} className="s-input" value={copy[k]} onChange={(e) => edit(k, e.target.value)} />
+      )}
+    </div>
+  );
+  return (
+    <div className="flex flex-col gap-4">
+      {field("label", "Small label above the heading")}
+      {field("heading", "Heading")}
+      {field("body", "Short description (leave empty to hide)", true)}
+      {field("button", "Button wording")}
+      <fieldset className="m-0 flex flex-col gap-3 border-0 p-0">
+        <legend className="s-label mb-1">Newsletter choices</legend>
+        {options.map((o, i) => (
+          <div key={o.slug} className="flex flex-col gap-2 border border-rule bg-white p-3">
+            <div className="flex flex-wrap gap-3">
+              <div className="flex flex-[1_1_220px] flex-col gap-1">
+                <label htmlFor={`nl-name-${o.slug}`} className="s-label">Name</label>
+                <input id={`nl-name-${o.slug}`} className="s-input" value={o.name} onChange={(e) => editOpt(i, { name: e.target.value })} />
+              </div>
+              <div className="flex flex-[1_1_220px] flex-col gap-1">
+                <label htmlFor={`nl-cad-${o.slug}`} className="s-label">How often (optional)</label>
+                <input id={`nl-cad-${o.slug}`} className="s-input" value={o.cadence} onChange={(e) => editOpt(i, { cadence: e.target.value })} />
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-5 text-[15px]">
+              <label className="flex items-center gap-2">
+                <input type="checkbox" checked={o.show} onChange={(e) => editOpt(i, { show: e.target.checked })} /> Show on the signup form
+              </label>
+              <label className="flex items-center gap-2">
+                <input type="checkbox" checked={o.checked} onChange={(e) => editOpt(i, { checked: e.target.checked })} /> Ticked by default
+              </label>
+            </div>
+          </div>
+        ))}
+      </fieldset>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          className="s-btn s-btn-primary"
+          disabled={pending}
+          onClick={() =>
+            start(async () => {
+              if (options.some((o) => !o.name.trim())) { setMsg("Each newsletter needs a name."); return; }
+              await saveNewsletterBox({ copy, options });
+              setMsg("Saved");
+            })
+          }
+        >
+          Save signup box
+        </button>
+        <span role="status" className="text-[15px] text-slate">{msg}</span>
+      </div>
+      <p className="m-0 text-[14px] text-slate">If you hide every choice, the signup box disappears from the home page.</p>
+    </div>
   );
 }
