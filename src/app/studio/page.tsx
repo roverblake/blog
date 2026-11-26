@@ -42,7 +42,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   return (
     <main className="mx-auto max-w-[1100px] px-6 py-8">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="m-0 font-display text-[36px] font-normal">Posts</h1>
+        <h1 className="s-h1">Posts</h1>
         <form action={createPost} className="flex items-center gap-2">
           <label htmlFor="new-type" className="sr-only">
             Type of new post
@@ -106,7 +106,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       <div className="s-panel overflow-x-auto p-0">
         <table className="w-full border-collapse text-left text-[16px]">
           <thead>
-            <tr className="border-b border-rule text-[12px] uppercase tracking-[0.14em] text-slate">
+            <tr className="border-b border-rule text-[13px] font-medium text-slate">
               <th className="px-4 py-3 font-normal">Title</th>
               <th className="px-4 py-3 font-normal">Status</th>
               <th className="px-4 py-3 font-normal">Type</th>
@@ -125,7 +125,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
             {rows.map((r) => (
               <tr key={r.id} className="border-b border-rule last:border-0 hover:bg-[#faf9f7]">
                 <td className="px-4 py-3">
-                  <Link href={`/studio/posts/${r.id}`} className="font-caslon text-[18px]">
+                  <Link href={`/studio/posts/${r.id}`} className="text-[16px] font-semibold text-ink hover:underline">
                     {r.title || <span className="text-slate italic">Untitled</span>}
                   </Link>
                   {r.visibility === "subscribers" && <span className="ml-2 text-[13px] text-slate">· Subscribers</span>}

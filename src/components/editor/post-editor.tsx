@@ -350,7 +350,7 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
   const drawerOpen = settingsOpen || grammarOpen;
 
   return (
-    <div className="flex min-h-[calc(100vh-49px)] flex-col bg-white">
+    <div className="flex min-h-screen flex-col bg-white">
       {/* Top bar: back, save state, word count | spelling, settings, preview, publish */}
       <div className="editor-chrome sticky top-0 z-30 bg-white">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-rule px-5 py-2">
@@ -549,7 +549,7 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
       </div>
 
       {/* Writing surface: one clean centered column */}
-      <main className="flex-1 px-6 pt-12 pb-32">
+      <main className="writing flex-1 px-6 pt-12 pb-32">
         <div className="mx-auto max-w-reading">
           {ptype === "commonplace" ? (
             <>
@@ -646,7 +646,7 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
           className="editor-chrome fixed top-0 right-0 bottom-0 z-40 flex w-full max-w-[400px] flex-col gap-4 overflow-y-auto border-l border-rule bg-[#faf9f7] p-5 shadow-2xl"
         >
           <div className="flex items-center justify-between">
-            <h2 className="m-0 font-display text-[24px] font-normal">{settingsOpen ? "Post settings" : "Spelling & grammar"}</h2>
+            <h2 className="m-0 text-[18px] font-semibold">{settingsOpen ? "Post settings" : "Spelling & grammar"}</h2>
             <button type="button" className="s-btn" onClick={() => { setSettingsOpen(false); setGrammarOpen(false); }}>
               Done
             </button>

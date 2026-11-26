@@ -176,7 +176,7 @@ function VideoView({ node, updateAttributes, selected }: ReactNodeViewProps) {
     <NodeViewWrapper as="figure" data-drag-handle className={`video-block ${selected ? "ProseMirror-selectednode" : ""}`}>
       <span className="video-frame" contentEditable={false}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        {thumb && <img src={thumb} alt="" />}
+        {thumb && <img src={thumb} alt="" onError={(e) => { e.currentTarget.style.display = "none"; }} />}
         <span className="video-play" aria-hidden="true" />
         <span className="video-source">{a.provider === "youtube" ? "YouTube" : "Vimeo"} video</span>
       </span>

@@ -38,7 +38,7 @@ export default async function SubscribersPage({ searchParams }: { searchParams: 
   return (
     <main className="mx-auto flex max-w-[1100px] flex-col gap-6 px-6 py-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="m-0 font-display text-[36px] font-normal">Subscribers</h1>
+        <h1 className="s-h1">Subscribers</h1>
         <div className="flex gap-2">
           <a download className="s-btn" href="/studio/subscribers/export">Export all (CSV)</a>
           <a download className="s-btn" href="/studio/subscribers/export?list=essays">Essays CSV</a>
@@ -54,7 +54,7 @@ export default async function SubscribersPage({ searchParams }: { searchParams: 
         ].map(([label, n]) => (
           <div key={label} className="s-panel">
             <div className="s-panel-title m-0">{label}</div>
-            <div className="font-display text-[40px]">{n}</div>
+            <div className="mt-1 text-[32px] font-semibold tracking-tight">{n}</div>
           </div>
         ))}
       </div>
@@ -80,7 +80,7 @@ export default async function SubscribersPage({ searchParams }: { searchParams: 
       <div className="s-panel overflow-x-auto p-0">
         <table className="w-full border-collapse text-left text-[16px]">
           <thead>
-            <tr className="border-b border-rule text-[12px] uppercase tracking-[0.14em] text-slate">
+            <tr className="border-b border-rule text-[13px] font-medium text-slate">
               <th className="px-4 py-3 font-normal">Email</th>
               <th className="px-4 py-3 font-normal">Status</th>
               <th className="px-4 py-3 font-normal">Lists</th>

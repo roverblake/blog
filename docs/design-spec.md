@@ -134,3 +134,6 @@ At Blake's request (mockup approved): a Commonplace post leads with its quotatio
 ### Nov 25, 2026: tapered rule under the masthead
 
 At Blake's request (option G), the fleur-de-lis rule under the masthead is replaced by a centered 1.5px ink rule, at most 560px wide, that fades to nothing at both ends. The small fleur-de-lis remains only as the divider inside Commonplace posts.
+
+### Amendment: Studio dashboard (Nov 26, 2026)
+The private Studio (Posts, Subscribers, Settings) now uses a plain sans-serif dashboard look modeled on Substack: a left sidebar, rounded buttons and panels, sentence-case labels. This spec governs the public site only; the Studio is not reader-facing. The writing surface in the editor keeps the public serif type so drafts look like the finished post.

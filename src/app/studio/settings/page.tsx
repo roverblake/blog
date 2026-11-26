@@ -15,7 +15,7 @@ export default async function SettingsPage() {
   ]);
   return (
     <main className="mx-auto flex max-w-[900px] flex-col gap-6 px-6 py-8">
-      <h1 className="m-0 font-display text-[36px] font-normal">Settings</h1>
+      <h1 className="s-h1">Settings</h1>
 
       <section className="s-panel flex flex-col gap-3" aria-labelledby="email-h">
         <h2 id="email-h" className="s-panel-title m-0">Emails</h2>

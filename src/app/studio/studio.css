@@ -1,44 +1,52 @@
-/* Private Studio UI (not governed by the public design spec, but uses its palette). */
+/* Private Studio UI. Not governed by the public design spec: modeled on
+   Substack's dashboard (sans-serif, sentence case, soft rounded controls),
+   in the site's palette. Writing surfaces stay in the public serif. */
 @layer components {
+.studio {
+  --ui: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --ui-border: #e2dfd8;
+  --ui-hover: #f2f0ec;
+  font-family: var(--ui);
+  font-size: 15px;
+  color: #1f1d1a;
+}
+.studio .article-body, .studio .ProseMirror, .studio .footnotes, .studio .writing { font-family: var(--font-serif); }
+
+.studio .s-h1 { margin: 0; font-family: var(--ui); font-size: 26px; font-weight: 700; letter-spacing: -0.01em; color: var(--color-ink); }
 .studio .s-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  min-height: 40px;
-  padding: 0 14px;
-  border: 1px solid var(--color-ink);
-  background: transparent;
-  font-family: var(--font-serif);
-  font-size: 13px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  cursor: pointer;
-  color: var(--color-ink);
-  white-space: nowrap;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 36px; padding: 0 14px;
+  border: 1px solid var(--ui-border); border-radius: 8px; background: #fff;
+  font-family: var(--ui); font-size: 14px; font-weight: 500; letter-spacing: 0; text-transform: none;
+  color: #2a2723; cursor: pointer; white-space: nowrap; transition: background .12s, border-color .12s;
 }
+.studio .s-btn:hover { background: var(--ui-hover); color: #2a2723; }
 .studio .s-btn:disabled { opacity: 0.5; cursor: default; }
-.studio .s-btn-primary { background: var(--color-navy); border-color: var(--color-navy); color: #fff; }
-.studio .s-btn-primary:hover { color: #fff; }
-.studio .s-btn-danger { border-color: #8a2a22; color: #8a2a22; }
+.studio .s-btn-primary { background: var(--color-ink); border-color: var(--color-ink); color: #fff; }
+.studio .s-btn-primary:hover { background: #000; color: #fff; }
+.studio .s-btn-danger { color: #a03328; }
+.studio .s-btn-danger:hover { background: #fbefed; color: #a03328; }
 .studio .s-input, .studio .s-select, .studio .s-textarea {
-  width: 100%;
-  border: 1px solid #cfc9be;
-  background: #fff;
-  padding: 0 10px;
-  font-family: var(--font-serif);
-  font-size: 16px;
-  min-height: 40px;
-  border-radius: 0;
+  width: 100%; min-height: 38px; padding: 0 12px;
+  border: 1px solid var(--ui-border); border-radius: 8px; background: #fff;
+  font-family: var(--ui); font-size: 15px; color: #1f1d1a;
 }
-.studio .s-textarea { padding: 8px 10px; min-height: 80px; resize: vertical; }
-.studio .s-label { font-size: 14px; color: var(--color-slate); display: block; margin-bottom: 4px; }
-.studio .s-panel { background: #fff; border: 1px solid var(--color-rule); padding: 18px; }
-.studio .s-panel-title { font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--color-slate); margin-bottom: 12px; }
-.studio .s-badge { display: inline-block; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; padding: 2px 8px; border: 1px solid currentColor; }
-.studio .s-badge-draft { color: var(--color-slate); }
-.studio .s-badge-scheduled { color: #8a5a00; }
-.studio .s-badge-published { color: #24603a; }
+.studio .s-input:focus, .studio .s-select:focus, .studio .s-textarea:focus { outline: none; border-color: #9a948a; box-shadow: 0 0 0 3px rgba(20,20,20,.06); }
+.studio .s-textarea { padding: 9px 12px; min-height: 80px; resize: vertical; line-height: 1.45; }
+.studio .s-label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: #4a4741; }
+.studio .s-panel { background: #fff; border: 1px solid var(--ui-border); border-radius: 12px; padding: 20px; }
+.studio .s-panel-title { margin-bottom: 12px; font-size: 15px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--color-ink); }
+.studio .s-badge {
+  display: inline-block; padding: 2px 9px; border: 0; border-radius: 999px;
+  font-size: 12px; font-weight: 500; letter-spacing: 0; text-transform: capitalize;
+}
+.studio .s-badge-draft { background: #efede8; color: #5c5852; }
+.studio .s-badge-scheduled { background: #fbf0d9; color: #7a5200; }
+.studio .s-badge-published { background: #e3f1e7; color: #1f5a33; }
+.studio table thead tr { text-transform: none; letter-spacing: 0; }
+.studio .s-nav-link { display: flex; align-items: center; min-height: 36px; padding: 0 12px; border-radius: 8px; font-size: 15px; font-weight: 500; color: #3d3a35; }
+.studio .s-nav-link:hover { background: var(--ui-hover); color: #1f1d1a; }
+.studio .s-nav-link[aria-current="page"] { background: #ebe8e2; color: var(--color-ink); }
 
 /* Editor surface: matches the public post body */
 .studio .ProseMirror { outline: none; min-height: 300px; }
@@ -73,30 +81,15 @@
 .studio .ProseMirror { counter-reset: footnote; }
 .studio .ProseMirror .footnote-ref { counter-increment: footnote; }
 .studio .ProseMirror .footnote-ref::before { content: counter(footnote); }
-}
 
-/* Editor chrome: quiet, Substack-like buttons (sentence case, sans, rounded) */
-.studio .editor-chrome, .studio .editor-chrome select {
-  font-family: ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
-}
-.studio .editor-chrome .s-btn {
-  min-height: 34px;
-  padding: 0 12px;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  font-family: ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 0;
-  text-transform: none;
-  color: #3d3a35;
-}
-.studio .editor-chrome .s-btn:hover { background: #efede8; }
+
+/* Editor chrome */
+.studio .editor-chrome .s-btn { border-color: transparent; background: transparent; min-height: 34px; padding: 0 12px; }
+.studio .editor-chrome .s-btn:hover { background: var(--ui-hover); }
 .studio .editor-chrome .s-btn[aria-expanded="true"] { background: #e6e3dc; }
 .studio .editor-chrome .s-btn-primary { background: var(--color-ink); border-color: var(--color-ink); color: #fff; padding: 0 16px; }
 .studio .editor-chrome .s-btn-primary:hover { background: #000; color: #fff; }
-.studio .editor-chrome .s-btn-danger { color: #8a2a22; }
-.studio .editor-chrome .s-badge { font-family: inherit; font-size: 12px; letter-spacing: 0.04em; border-radius: 4px; 
+
 /* Editor-only bits for images, video and audio */
 .studio .ProseMirror figure { position: relative; }
 .studio .ProseMirror .media-tools {
@@ -116,4 +109,5 @@
   font-family: var(--font-serif); font-size: 14px; letter-spacing: .18em; text-transform: uppercase; color: var(--color-ink);
 }
 .studio .ProseMirror .audio-title::placeholder { color: #b9b4ab; }
+
 }
