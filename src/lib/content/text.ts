@@ -46,7 +46,7 @@ export function firstParagraphText(doc: Doc): string {
 export function firstQuote(doc: Doc): { text: string; cite: string | null } | null {
   for (const b of doc.content ?? []) {
     if (b.type === "pullQuote") return { text: blockText(b).trim(), cite: b.attrs?.cite ?? null };
-    if (b.type === "blockquote") return { text: blockText(b).trim(), cite: null };
+    if (b.type === "blockquote") return { text: blockText(b).trim(), cite: b.attrs?.cite ?? null };
   }
   return null;
 }

@@ -40,14 +40,14 @@ const quiet: Doc = { type: "doc", content: [p(t("Stillness is not a mood that ar
 const pascal: Doc = {
   type: "doc",
   content: [
-    { type: "pullQuote", attrs: { cite: "Pascal, Pensées 139" }, content: [p(t("All the unhappiness of men arises from one single fact, that they cannot stay quietly in their own chamber."))] },
+    { type: "blockquote", attrs: { cite: "Pascal, Pensées 139" }, content: [p(t("All the unhappiness of men arises from one single fact, that they cannot stay quietly in their own chamber."))] },
     p(t("A note on distraction.")),
   ],
 };
 const augustine: Doc = {
   type: "doc",
   content: [
-    { type: "pullQuote", attrs: { cite: "Augustine, Confessions I.1" }, content: [p(t("Our heart is restless, until it repose in Thee."))] },
+    { type: "blockquote", attrs: { cite: "Augustine, Confessions I.1" }, content: [p(t("Our heart is restless, until it repose in Thee."))] },
     p(t("A note on restlessness as direction.")),
   ],
 };

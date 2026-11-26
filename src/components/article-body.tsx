@@ -34,10 +34,13 @@ function applyMarks(text: ReactNode, marks: Mark[] | undefined, key: string): Re
 function renderInline(nodes: InlineNode[] | undefined, ctx: Ctx, keyPrefix = ""): ReactNode[] {
   return (nodes ?? []).map((n, i) => {
     const key = `${keyPrefix}${i}`;
+    if (!n || typeof n !== "object") return null;
     if (n.type === "text") return <Fragment key={key}>{applyMarks(n.text, n.marks, key)}</Fragment>;
     if (n.type === "hardBreak") return <br key={key} />;
     if (n.type === "footnote") {
-      ctx.footnotes.push(n.attrs.text);
+      const text = n.attrs?.text?.trim();
+      if (!text) return null;
+      ctx.footnotes.push(text);
       const num = ctx.footnotes.length;
       return (
         <sup key={key} id={`fnref-${num}`}>
@@ -129,7 +132,12 @@ function renderBlock(b: BlockNode, i: number, ctx: Ctx): ReactNode {
     case "heading":
       return <h2 key={i}>{renderInline(b.content, ctx)}</h2>;
     case "blockquote":
-      return <blockquote key={i}>{(b.content ?? []).map((c, j) => renderBlock(c, j, ctx))}</blockquote>;
+      return (
+        <figure key={i} className="block-quote">
+          <blockquote>{(b.content ?? []).map((c, j) => renderBlock(c, j, ctx))}</blockquote>
+          {b.attrs?.cite ? <figcaption>{b.attrs.cite}</figcaption> : null}
+        </figure>
+      );
     case "pullQuote":
       return (
         <blockquote key={i} className="pull-quote">
@@ -162,7 +170,7 @@ function renderBlock(b: BlockNode, i: number, ctx: Ctx): ReactNode {
         </div>
       );
     case "image": {
-      const { src, alt, caption, credit } = b.attrs;
+      const { src, alt, caption, credit } = b.attrs ?? { src: "" };
       const href = safeHref(src);
       if (!href) return null;
       return (

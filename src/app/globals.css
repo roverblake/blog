@@ -230,12 +230,31 @@
     text-transform: uppercase;
     color: var(--color-slate);
   }
-  /* Plain block quotes: indented, same type as the body */
-  .article-body blockquote:not(.pull-quote) {
-    margin: 0 0 0 1.5em;
+  /* Block quotes in the Commonplace style (spec amendment, Nov 25 2026):
+     left-aligned Caslon Text italic with a grey source line beneath. */
+  .article-body .block-quote {
+    margin: 8px 0;
   }
-  .article-body blockquote:not(.pull-quote) p + p {
-    margin-top: 16px;
+  .article-body .block-quote blockquote,
+  .article-body blockquote.block-quote {
+    margin: 0;
+    font-family: var(--font-caslon);
+    font-style: italic;
+    font-size: 22px;
+    line-height: 1.45;
+    color: var(--color-ink);
+  }
+  .article-body .block-quote blockquote p + p {
+    margin-top: 12px;
+  }
+  .article-body .block-quote figcaption,
+  .article-body .block-quote .cite-input {
+    margin-top: 10px;
+    font-family: var(--font-serif);
+    font-style: normal;
+    font-size: 16px;
+    line-height: 1.4;
+    color: var(--color-slate);
   }
   .article-body ul,
   .article-body ol {
@@ -349,6 +368,10 @@
     }
     .article-body .pull-quote {
       font-size: 22px;
+    }
+    .article-body .block-quote blockquote,
+    .article-body blockquote.block-quote {
+      font-size: 19px;
     }
     .dropcap {
       font-size: 68px;

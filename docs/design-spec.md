@@ -95,3 +95,14 @@ Removed for now (can return later): the three-column row (Essays / Letters / Ser
 - Use navy for headings, section labels, panels or backgrounds
 - Use ornamental or boxed drop caps
 - Use gradients, drop shadows or rounded "app-style" cards on the public site
+
+---
+
+## Amendments
+
+### Nov 25, 2026 — Block quotes (chosen by Blake)
+
+- Block quotes in posts use the **Commonplace style**, the same as the homepage "From the Commonplace Book" quotes: left-aligned **Libre Caslon Text italic**, 22px desktop / 19px mobile, line-height 1.45, ink color, no rules or indent.
+- An optional **source line** sits beneath in EB Garamond 16px, slate grey (e.g. "Pascal, *Pensées* 139").
+- Pull quotes are unchanged (centered between thin ink rules, §4).
+- Commonplace notes: the first block quote (or pull quote) and its source are what the homepage shows.

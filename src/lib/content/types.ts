@@ -10,12 +10,12 @@ export type Mark =
 export type TextNode = { type: "text"; text: string; marks?: Mark[] };
 export type HardBreak = { type: "hardBreak" };
 /** Inline footnote; its text is shown in the Notes list at the end. */
-export type FootnoteNode = { type: "footnote"; attrs: { text: string } };
+export type FootnoteNode = { type: "footnote"; attrs?: { text?: string } };
 export type InlineNode = TextNode | HardBreak | FootnoteNode;
 
 export type Paragraph = { type: "paragraph"; content?: InlineNode[] };
-export type Heading = { type: "heading"; attrs: { level: 2 | 3 }; content?: InlineNode[] };
-export type Blockquote = { type: "blockquote"; content?: BlockNode[] };
+export type Heading = { type: "heading"; attrs?: { level?: number }; content?: InlineNode[] };
+export type Blockquote = { type: "blockquote"; attrs?: { cite?: string | null }; content?: BlockNode[] };
 export type PullQuote = { type: "pullQuote"; attrs?: { cite?: string | null }; content?: Paragraph[] };
 export type ListItem = { type: "listItem"; content?: BlockNode[] };
 export type BulletList = { type: "bulletList"; content?: ListItem[] };
