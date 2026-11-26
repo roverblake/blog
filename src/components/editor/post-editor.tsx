@@ -95,7 +95,9 @@ function splitCommonplace(doc: JSONContent): { quote: string; source: string; re
   const blocks = doc.content ?? [];
   const first = blocks[0];
   if (first?.type !== "pullQuote") return { quote: "", source: "", rest: blocks };
-  const quote = (first.content ?? []).map((p) => (p.content ?? []).map((n) => n.text ?? "").join("")).join("\n\n");
+  const quote = (first.content ?? [])
+    .map((p) => (p.content ?? []).map((n) => (n.type === "hardBreak" ? "\n" : (n.text ?? ""))).join(""))
+    .join("\n\n");
   return { quote, source: (first.attrs?.cite as string) ?? "", rest: blocks.slice(1) };
 }
 

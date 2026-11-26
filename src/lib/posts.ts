@@ -3,7 +3,7 @@ import { and, desc, eq, inArray, ne, sql, type SQL } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { asDoc } from "@/lib/content/types";
 import { gateDoc } from "@/lib/content/gate";
-import { firstParagraphText, firstQuote, readingMinutes } from "@/lib/content/text";
+import { countWords, firstParagraphText, firstQuote, readingMinutes } from "@/lib/content/text";
 import { mediaUrl } from "@/lib/urls";
 
 const { posts, tags, postTags, media } = schema;
@@ -51,6 +51,26 @@ export async function listPosts(opts: {
     .orderBy(desc(posts.publishedAt))
     .limit(opts.limit ?? 50)
     .offset(opts.offset ?? 0);
+}
+
+/** Longest quotation (in words) shown in full in a list row. */
+const SHORT_QUOTE_WORDS = 45;
+
+/**
+ * For commonplace posts in a list, attach the quotation and its source when the
+ * quotation is short enough to show in full. Only the free part is read.
+ */
+export async function withShortQuotes<T extends PostListItem>(items: T[]): Promise<(T & { quote?: string; cite?: string | null })[]> {
+  const ids = items.filter((p) => p.type === "commonplace").map((p) => p.id);
+  if (!ids.length) return items;
+  const rows = await db.select({ id: posts.id, content: posts.content, visibility: posts.visibility }).from(posts).where(inArray(posts.id, ids));
+  const found = new Map<string, { quote: string; cite: string | null }>();
+  for (const r of rows) {
+    const { doc } = gateDoc(asDoc(r.content), { gated: r.visibility === "subscribers", hasAccess: false });
+    const q = firstQuote(doc);
+    if (q?.text && countWords(q.text) <= SHORT_QUOTE_WORDS) found.set(r.id, { quote: q.text, cite: q.cite });
+  }
+  return items.map((p) => ({ ...p, ...found.get(p.id) }));
 }
 
 export async function getImage(id: string | null) {

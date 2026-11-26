@@ -11,7 +11,9 @@ function meta(p: PostListItem, withYear: boolean) {
 }
 
 /** §4 "The Latest" rows: type label, title in Caslon Text, date/meta, hairlines. */
-export function PostRows({ items, withYear = false, showType = true }: { items: PostListItem[]; withYear?: boolean; showType?: boolean }) {
+type Row = PostListItem & { quote?: string; cite?: string | null };
+
+export function PostRows({ items, withYear = false, showType = true }: { items: Row[]; withYear?: boolean; showType?: boolean }) {
   if (!items.length) return <p className="py-6 text-[18px] text-slate italic">Nothing here yet.</p>;
   return (
     <ul>
@@ -21,7 +23,14 @@ export function PostRows({ items, withYear = false, showType = true }: { items: 
             {showType && (
               <span className="flex-[0_0_170px] text-[13px] uppercase tracking-[0.18em] text-label">{p.kicker || TYPE_LABEL[p.type]}</span>
             )}
-            <span className="flex-[1_1_260px] font-caslon text-[20px] leading-[1.3]">{p.title}</span>
+            {p.quote ? (
+              <span className="flex flex-[1_1_260px] flex-col gap-1.5">
+                <span className="font-caslon text-[20px] leading-[1.4] whitespace-pre-line italic">“{p.quote.replace(/^[“"]|[”"]$/g, "")}”</span>
+                {p.cite && <span className="text-[16px] text-slate">{p.cite}</span>}
+              </span>
+            ) : (
+              <span className="flex-[1_1_260px] font-caslon text-[20px] leading-[1.3]">{p.title}</span>
+            )}
             <span className="text-[16px] text-slate">{meta(p, withYear)}</span>
           </Link>
         </li>
