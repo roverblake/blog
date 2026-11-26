@@ -1,21 +1,371 @@
 @import "tailwindcss";
 
 /*
- * Design tokens.
+ * Design tokens from docs/design-spec.md (LOCKED, Nov 25 2026).
+ * Change values here only when the spec changes.
  *
- * Every public color, font and size must come from docs/design-spec.md.
- * These values are deliberately plain placeholders until the spec is pasted in;
- * they will be replaced in one place here, and the whole site follows.
+ * §2 palette, plus a few secondary greys taken from the reference mockups the
+ * spec points to (marked "mockup"), used for subtitles, list labels and the
+ * footer.
  */
 @theme {
-  /* TODO(design-spec): replace with the locked palette and typefaces. */
-  --color-ink: #000000;
-  --color-paper: #ffffff;
-  --font-serif: ui-serif, Georgia, serif;
+  --color-ink: #141414;        /* headlines, labels, rules, top bar, footer */
+  --color-body: #2a2723;       /* article text, drop cap */
+  --color-slate: #5c5852;      /* kickers, dates, bylines, captions */
+  --color-rule: #ddd8cf;       /* hairlines between list items */
+  --color-warm: #f2f1ee;       /* newsletter box, subscriber gate */
+  --color-white: #ffffff;      /* page background */
+  --color-navy: #1f3a68;       /* Subscribe, "Continue reading →", checkbox, link hover ONLY */
+  --color-subtle: #3d3a35;     /* mockup: italic subtitles and taglines */
+  --color-label: #6b655c;      /* mockup: type labels in lists */
+  --color-placeholder: #6e6a64;/* mockup: input placeholder */
+  --color-footer-text: #e6e2da;/* mockup: footer links */
+  --color-footer-muted: #a8a49c;/* mockup: footer © line */
+  --color-footer-label: #9aa0a8;/* mockup: footer column labels, divider dots */
+  --color-footer-rule: #3a3a3a;/* mockup: footer divider */
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  /* §3 typography */
+  --font-display: var(--font-caslon-display), Georgia, serif;
+  --font-caslon: var(--font-caslon-text), Georgia, serif;
+  --font-serif: var(--font-garamond), Georgia, serif;
+  --font-dropcap: var(--font-cormorant), var(--font-caslon-display), Georgia, serif;
+
+  /* §4 layout widths */
+  --container-site: 1180px;
+  --container-lead: 860px;
+  --container-title: 820px;
+  --container-reading: 680px;
 }
 
-body {
-  background: var(--color-paper);
-  color: var(--color-ink);
-  font-family: var(--font-serif);
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    margin: 0;
+    background: var(--color-white);
+    color: var(--color-ink);
+    font-family: var(--font-serif);
+    -webkit-font-smoothing: antialiased;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  a:hover {
+    color: var(--color-navy);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-navy);
+    outline-offset: 2px;
+  }
+  input::placeholder {
+    color: var(--color-placeholder);
+  }
+}
+
+@layer components {
+  /* §3 section labels: small caps 15px/600, 0.24em, ink, 1px rule beneath */
+  .section-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px solid var(--color-ink);
+    padding-bottom: 8px;
+  }
+  .section-label > h2,
+  .section-label > h1 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--color-ink);
+  }
+  .section-label > a {
+    font-size: 15px;
+    font-style: italic;
+    color: var(--color-slate);
+  }
+
+  /* §3 kickers */
+  .kicker {
+    font-size: 14px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-slate);
+  }
+
+  /* §6 "Continue reading →" */
+  .continue-link {
+    color: var(--color-navy);
+    font-style: italic;
+    white-space: nowrap;
+  }
+  .continue-link:hover {
+    color: var(--color-navy);
+    text-decoration: underline;
+  }
+
+  /* §7 buttons */
+  .btn-primary,
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 24px;
+    border-radius: 0;
+    font-family: var(--font-serif);
+    font-size: 14px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .btn-primary {
+    background: var(--color-navy);
+    color: var(--color-white);
+    border: 0;
+  }
+  .btn-primary:hover {
+    color: var(--color-white);
+  }
+  .btn-secondary {
+    background: transparent;
+    color: var(--color-ink);
+    border: 1px solid var(--color-ink);
+  }
+  .btn-primary:disabled,
+  .btn-secondary:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+
+  /* §7 inputs */
+  .field {
+    border: 1px solid var(--color-ink);
+    border-radius: 0;
+    background: var(--color-white);
+    font-family: var(--font-serif);
+    font-size: 18px;
+    height: 52px;
+    padding: 0 16px;
+  }
+
+  /* Email + button joined in one bordered row (newsletter box, gate) */
+  .inline-form {
+    display: flex;
+    flex-wrap: wrap;
+    border: 1px solid var(--color-ink);
+    background: var(--color-white);
+  }
+  .inline-form input {
+    flex: 1 1 200px;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    padding: 0 16px;
+    height: 52px;
+    font-family: var(--font-serif);
+    font-size: 18px;
+  }
+  .inline-form button {
+    height: 52px;
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* §4–5 reading column and article body                              */
+  /* ---------------------------------------------------------------- */
+  .article-body {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    font-size: 21px;
+    line-height: 1.7;
+    color: var(--color-body);
+  }
+  .article-body p {
+    margin: 0;
+  }
+  .article-body a {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+  /* Section headings in small caps (§3/§4) */
+  .article-body > h2 {
+    margin: 16px 0 0;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--color-ink);
+    line-height: 1.5;
+  }
+  /* Pull quotes centered between thin ink rules, Caslon Text italic (§4) */
+  .article-body .pull-quote {
+    margin: 12px 0;
+    padding: 22px 0;
+    border-top: 1px solid var(--color-ink);
+    border-bottom: 1px solid var(--color-ink);
+    text-align: center;
+    font-family: var(--font-caslon);
+    font-size: 27px;
+    line-height: 1.45;
+    font-style: italic;
+    color: var(--color-ink);
+  }
+  .article-body .pull-quote p + p {
+    margin-top: 12px;
+  }
+  .article-body .pull-quote cite {
+    display: block;
+    margin-top: 10px;
+    font-family: var(--font-serif);
+    font-style: normal;
+    font-size: 14px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-slate);
+  }
+  /* Plain block quotes: indented, same type as the body */
+  .article-body blockquote:not(.pull-quote) {
+    margin: 0 0 0 1.5em;
+  }
+  .article-body blockquote:not(.pull-quote) p + p {
+    margin-top: 16px;
+  }
+  .article-body ul,
+  .article-body ol {
+    margin: 0;
+    padding-left: 1.4em;
+  }
+  .article-body ul {
+    list-style: disc;
+  }
+  .article-body ol {
+    list-style: decimal;
+  }
+  .article-body li + li {
+    margin-top: 8px;
+  }
+  .article-body .divider {
+    margin: 8px 0 0;
+    text-align: center;
+    font-size: 22px;
+    letter-spacing: 0.6em;
+    color: var(--color-footer-label);
+    border: 0;
+  }
+  .article-body figure {
+    margin: 8px 0;
+  }
+  .article-body figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .caption-row {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--color-rule);
+    font-size: 16px;
+    line-height: 1.4;
+    color: var(--color-slate);
+  }
+  .caption-row .caption {
+    font-style: italic;
+  }
+  .caption-row .credit {
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .article-body sup a {
+    text-decoration: none;
+    color: var(--color-navy);
+    font-size: 0.7em;
+    padding: 0 2px;
+  }
+  .footnotes {
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--color-body);
+  }
+  .footnotes ol {
+    margin: 12px 0 0;
+    padding-left: 1.4em;
+    list-style: decimal;
+  }
+  .footnotes li + li {
+    margin-top: 8px;
+  }
+  .footnotes a.backref {
+    color: var(--color-slate);
+    margin-left: 6px;
+  }
+
+  /* §5 drop cap (locked) */
+  .dropcap {
+    float: left;
+    font-family: var(--font-dropcap);
+    font-weight: 500;
+    font-size: 84px;
+    line-height: 0.8;
+    padding: 8px 10px 0 0;
+    color: var(--color-body);
+  }
+  .lead-in {
+    text-transform: uppercase;
+    font-size: 0.8em;
+    letter-spacing: 0.06em;
+  }
+
+  /* Text fades out before the subscriber gate (§4.5) */
+  .gate-fade {
+    position: relative;
+  }
+  .gate-fade::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 120px;
+    background: linear-gradient(to bottom, rgb(255 255 255 / 0), var(--color-white));
+    pointer-events: none;
+  }
+
+  /* Phones: body 17px, drop cap shrinks proportionally (66px at 16px) */
+  @media (max-width: 640px) {
+    .article-body {
+      font-size: 17px;
+      gap: 20px;
+    }
+    .article-body .pull-quote {
+      font-size: 22px;
+    }
+    .dropcap {
+      font-size: 68px;
+      padding: 6px 8px 0 0;
+    }
+  }
+
+  /* Visually hidden but read by screen readers */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
 }
