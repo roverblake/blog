@@ -86,6 +86,7 @@ export function PostArticle({
         <div className="text-[13px] uppercase tracking-[0.16em] text-slate sm:text-[15px]">
           by <span className="text-ink">Blake Johnson</span> · <time dateTime={date.toISOString()}>{fullDate(date)}</time> · {minutes}{" "}
           min read
+          {post.visibility === "subscribers" && <> · {post.fullyLocked ? "Subscribers only" : "Subscribers"}</>}
         </div>
       </div>
 

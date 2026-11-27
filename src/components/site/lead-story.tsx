@@ -37,6 +37,7 @@ export function LeadStory({ post, opening, image }: { post: PostMeta; opening: P
       {post.subtitle && <p className="m-0 text-[20px] leading-[1.4] text-subtle italic sm:text-[24px]">{post.subtitle}</p>}
       <div className="text-[14px] uppercase tracking-[0.12em] text-slate sm:text-[16px]">
         by <Link href="/about" className="text-ink">Blake Johnson</Link> · {shortDate(date)}
+        {post.visibility === "subscribers" && <> · Subscribers</>}
       </div>
       <div className="article-body mt-1.5">
         {opening ? (
@@ -55,7 +56,7 @@ export function LeadStory({ post, opening, image }: { post: PostMeta; opening: P
         ) : (
           <p>
             <Link href={href} className="continue-link no-underline">
-              Continue reading →
+              {post.visibility === "subscribers" ? "For subscribers · Continue reading →" : "Continue reading →"}
             </Link>
           </p>
         )}

@@ -209,3 +209,6 @@ The drop cap is a true two-line drop: its top lines up with the tall letters of 
 
 ### Amendment: notes set apart in the stream (Nov 26, 2026)
 On the Notes page, each note has 64px above and below (48px on phones) with the hairline between notes, while the parts inside a note sit closer together (16px), so each note reads as one unit. Pull quotes inside the stream are smaller (22px, less padding). Quotes longer than about 45 words are cut after about 40 words with "…" and "Read the whole note →".
+
+### Amendment: subscriber marking (Nov 27, 2026)
+Subscriber posts say so everywhere: the home lead story's byline ends "· Subscribers", and a fully locked lead shows "For subscribers · Continue reading →" in place of the opening. On the post page the byline ends "· Subscribers" (or "· Subscribers only" when the whole post is locked), which the owner also sees while signed in.
