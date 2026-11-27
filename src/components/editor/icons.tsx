@@ -13,6 +13,7 @@ const P: Record<string, React.ReactNode> = {
   bullets: <><path d="M9 6h11M9 12h11M9 18h11" /><circle cx="4.5" cy="6" r="1" /><circle cx="4.5" cy="12" r="1" /><circle cx="4.5" cy="18" r="1" /></>,
   numbers: <><path d="M10 6h10M10 12h10M10 18h10" /><path d="M4 4.5 5.5 4v4M4 14h2.5L4 17h2.5" /></>,
   divider: <><path d="M4 12h16" /><path d="M4 6h16M4 18h16" opacity=".3" /></>,
+  spell: <><text x="2.5" y="11" fontSize="9" fontFamily="ui-sans-serif, system-ui, sans-serif" fontWeight="600" fill="currentColor" stroke="none">abc</text><path d="m8 17 3 3 6-7" /></>,
   more: <><circle cx="5" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="19" cy="12" r="1.2" /></>,
 };
 

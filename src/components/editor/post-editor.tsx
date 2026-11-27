@@ -375,7 +375,7 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
   const drawerOpen = settingsOpen || grammarOpen;
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
+    <div className={`flex min-h-screen flex-col bg-white transition-[padding] duration-200 ${drawerOpen ? "xl:pr-[400px]" : ""}`}>
       {/* Top bar: back, save state, word count | spelling, settings, preview, publish */}
       <div className="editor-chrome sticky top-0 z-30 bg-white">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-rule px-5 py-2">
@@ -392,9 +392,6 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <button type="button" className="s-btn" onClick={() => { setGrammarOpen((o) => !o); setSettingsOpen(false); }} aria-expanded={grammarOpen}>
-              Spelling &amp; grammar
-            </button>
             <button type="button" className="s-btn" onClick={() => { setSettingsOpen((o) => !o); setGrammarOpen(false); }} aria-expanded={settingsOpen}>
               Settings
             </button>
@@ -452,6 +449,8 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
             {sep}
             <button type="button" className={tb} aria-label="Bulleted list" title="Bulleted list" aria-pressed={!!st?.bullet} onClick={run((e) => e.chain().focus().toggleBulletList().run())}><Icon name="bullets" /></button>
             <button type="button" className={tb} aria-label="Numbered list" title="Numbered list" aria-pressed={!!st?.ordered} onClick={run((e) => e.chain().focus().toggleOrderedList().run())}><Icon name="numbers" /></button>
+            {sep}
+            <button type="button" className={tb} aria-label="Spelling and grammar" title="Spelling & grammar" aria-pressed={grammarOpen} aria-expanded={grammarOpen} onClick={() => { setGrammarOpen((o) => !o); setSettingsOpen(false); }}><Icon name="spell" /></button>
             {sep}
             <div className="relative">
               <button type="button" className={`${tb} gap-1`} aria-expanded={moreOpen} aria-haspopup="menu" onClick={() => setMoreOpen((o) => !o)}>
@@ -693,15 +692,17 @@ export function PostEditor({ initial }: { initial: EditorInitial }) {
       {(
         <aside
           aria-label={settingsOpen ? "Post settings" : "Spelling and grammar"}
-          hidden={!drawerOpen}
-          className="editor-chrome fixed top-0 right-0 bottom-0 z-40 flex w-full max-w-[400px] flex-col gap-4 overflow-y-auto border-l border-rule bg-[#faf9f7] p-5 shadow-2xl"
+          aria-hidden={!drawerOpen}
+          inert={!drawerOpen}
+          className={`editor-chrome fixed top-0 right-0 bottom-0 z-40 flex w-full max-w-[400px] flex-col gap-4 overflow-y-auto border-l border-rule bg-[#faf9f7] p-5 transition-transform duration-200 ease-out xl:shadow-none ${drawerOpen ? "translate-x-0 shadow-2xl" : "translate-x-full"}`}
         >
-          <div className="flex items-center justify-between">
-            <h2 className="m-0 text-[18px] font-semibold">{settingsOpen ? "Post settings" : "Spelling & grammar"}</h2>
-            <button type="button" className="s-btn" onClick={() => { setSettingsOpen(false); setGrammarOpen(false); }}>
-              Done
-            </button>
-          </div>
+          {settingsOpen && (
+            <div className="flex items-center justify-end">
+              <button type="button" className="s-btn" onClick={() => setSettingsOpen(false)}>
+                Done
+              </button>
+            </div>
+          )}
           {grammarOpen && editor && <GrammarPanel editor={editor} dictionary={initial.dictionary} onClose={() => setGrammarOpen(false)} />}
           <div className={settingsOpen ? "" : "hidden"}>
             <SettingsPanel id={initial.id} title={ptype === "commonplace" && editor ? titleFromQuote(firstText(editor.getJSON())) : title} status={initial.status} initial={initial.settings} onTypeChange={onTypeChange} />

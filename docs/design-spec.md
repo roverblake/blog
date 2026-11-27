@@ -212,3 +212,6 @@ On the Notes page, each note has 64px above and below (48px on phones) with the 
 
 ### Amendment: subscriber marking (Nov 27, 2026)
 Subscriber posts say so everywhere: the home lead story's byline ends "· Subscribers", and a fully locked lead shows "For subscribers · Continue reading →" in place of the opening. On the post page the byline ends "· Subscribers" (or "· Subscribers only" when the whole post is locked), which the owner also sees while signed in.
+
+### Amendment: editor toolbar and side panel (Nov 27, 2026) — Studio only
+Spelling & grammar is now an icon button ("abc" with a tick) in the editor toolbar, after the list buttons, instead of a word in the top bar. Post settings and the spelling check open in a panel that slides in from the right; on wide screens (1280px and up) the page shifts left so the writing stays visible beside it.
