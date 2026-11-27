@@ -22,7 +22,7 @@ export function NoteStream({ notes, labelled = false }: { notes: NoteItem[]; lab
       {notes.map(({ post, doc: full, truncated }) => {
         const { doc, clipped } = truncated ? { doc: full, clipped: false } : clipDoc(full, 80);
         return (
-        <article key={post.id} className="border-b border-rule py-8 last:border-b-0">
+        <article key={post.id} className="note-item border-b border-rule py-12 last:border-b-0 sm:py-16">
           <Link href={postPath(post)} className="text-[13px] uppercase tracking-[0.18em] text-label hover:text-navy">
             {labelled ? "Note · " : ""}{post.publishedAt ? noteDate(post.publishedAt) : labelled ? "" : "Note"}
           </Link>

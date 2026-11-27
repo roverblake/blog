@@ -99,7 +99,8 @@ export function clipDoc(doc: Doc, maxWords = 80): { doc: Doc; clipped: boolean }
   for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i];
     const w = blockWeight(b);
-    if (used + w <= maxWords) {
+    const isQuote = b.type === "pullQuote" || b.type === "blockquote";
+    if (used + w <= maxWords && !(isQuote && w > 45)) {
       kept.push(b);
       used += w;
       continue;
@@ -107,6 +108,24 @@ export function clipDoc(doc: Doc, maxWords = 80): { doc: Doc; clipped: boolean }
     const left = maxWords - used;
     if (b.type === "paragraph" && left >= 12) {
       kept.push({ ...b, content: cutInline(b.content ?? [], left) });
+      return { doc: { ...doc, content: kept }, clipped: true };
+    }
+    if (isQuote && left >= 12) {
+      // Long quotes are cut too (after about 40 words), inside their own paragraphs.
+      let budget = Math.min(left, 40);
+      const inner: BlockNode[] = [];
+      for (const c of (b.content ?? []) as BlockNode[]) {
+        if (budget <= 0) break;
+        const words = countWords(blockText(c));
+        if (c.type === "paragraph" && words > budget) {
+          inner.push({ ...c, content: cutInline(c.content ?? [], budget) });
+          budget = 0;
+        } else {
+          inner.push(c);
+          budget -= words;
+        }
+      }
+      kept.push({ ...b, content: inner } as BlockNode);
       return { doc: { ...doc, content: kept }, clipped: true };
     }
     if (kept.length === 0) {

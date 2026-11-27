@@ -206,3 +206,6 @@ The email field and Subscribe button in the compact signup box now span the full
 
 ### Amendment: two-line drop cap; no blank gaps (Nov 26, 2026)
 The drop cap is a true two-line drop: its top lines up with the tall letters of the first line and its foot sits on the second line's baseline (80px desktop, 62px phones), so no third line is indented beside empty space. Empty paragraphs left in the editor are not shown on the public page, so they no longer create extra gaps.
+
+### Amendment: notes set apart in the stream (Nov 26, 2026)
+On the Notes page, each note has 64px above and below (48px on phones) with the hairline between notes, while the parts inside a note sit closer together (16px), so each note reads as one unit. Pull quotes inside the stream are smaller (22px, less padding). Quotes longer than about 45 words are cut after about 40 words with "…" and "Read the whole note →".

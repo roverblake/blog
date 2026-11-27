@@ -252,6 +252,19 @@
   .note-body.article-body {
     font-size: 19px;
   }
+  /* In the Notes stream, each note reads as one compact unit; the space between notes does the separating. */
+  .note-item .note-body.article-body {
+    gap: 16px;
+  }
+  .note-item .article-body .pull-quote {
+    margin: 4px 0;
+    padding: 14px 0;
+    font-size: 22px;
+  }
+  .note-item .article-body .block-quote blockquote,
+  .note-item .article-body blockquote.block-quote {
+    font-size: 20px;
+  }
   /* Link preview: a reference set between black rules, inset (Nov 26 amendment) */
   .article-body .link-ref,
   .link-ref {
