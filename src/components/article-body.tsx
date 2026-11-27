@@ -262,7 +262,10 @@ export function ArticleBody({
   fadeLast?: boolean;
 }) {
   const ctx: Ctx = { footnotes: [] };
-  const blocks = doc.content ?? [];
+  // Empty lines left in the editor don't become extra gaps on the page.
+  const isBlankPara = (b: BlockNode) =>
+    b.type === "paragraph" && !(b.content ?? []).some((n) => n.type !== "text" || n.text.trim() !== "");
+  const blocks = (doc.content ?? []).filter((b) => !isBlankPara(b));
   const firstParaIdx = dropCap ? blocks.findIndex((b) => b.type === "paragraph" && (b.content?.length ?? 0) > 0) : -1;
 
   const rendered = blocks.map((b, i) => {

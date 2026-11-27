@@ -203,3 +203,6 @@ On the Notes page, a note longer than about 80 words (pictures count as 60, link
 
 ### Amendment: signup box symmetry (Nov 26, 2026)
 The email field and Subscribe button in the compact signup box now span the full inner width of the warm panel, so the space on the left and right is equal.
+
+### Amendment: two-line drop cap; no blank gaps (Nov 26, 2026)
+The drop cap is a true two-line drop: its top lines up with the tall letters of the first line and its foot sits on the second line's baseline (80px desktop, 62px phones), so no third line is indented beside empty space. Empty paragraphs left in the editor are not shown on the public page, so they no longer create extra gaps.
